@@ -22,7 +22,7 @@ The app combines deterministic Markdown generation with AI-written site guidance
 - Tailwind CSS 4
 - OpenAI-compatible chat completions API
 - Clerk authentication
-- Lemon Squeezy checkout and webhooks
+- Lemon Squeezy checkout and webhooks are scaffolded but currently disabled
 - Neon Postgres with Drizzle ORM
 - Microlink screenshot and palette API
 
@@ -33,7 +33,7 @@ The app combines deterministic Markdown generation with AI-written site guidance
 - An OpenAI-compatible API key
 - Clerk application keys
 - Neon Postgres database URL
-- Lemon Squeezy store, variant, API, and webhook keys
+- Lemon Squeezy keys are optional while billing is disabled
 
 ## Environment Variables
 
@@ -51,11 +51,12 @@ CLERK_SECRET_KEY=sk_test_your_clerk_secret_key
 
 DATABASE_URL=postgresql://user:password@host/database?sslmode=require
 
-LEMONSQUEEZY_API_KEY=your_lemon_squeezy_api_key
-LEMONSQUEEZY_STORE_ID=your_store_id
-LEMONSQUEEZY_PRO_VARIANT_ID=your_pro_variant_id
-LEMONSQUEEZY_TEAM_VARIANT_ID=your_team_variant_id
-LEMONSQUEEZY_WEBHOOK_SECRET=your_webhook_secret
+# Optional: billing is currently disabled in /api/billing/checkout
+# LEMONSQUEEZY_API_KEY=your_lemon_squeezy_api_key
+# LEMONSQUEEZY_STORE_ID=your_store_id
+# LEMONSQUEEZY_PRO_VARIANT_ID=your_pro_variant_id
+# LEMONSQUEEZY_TEAM_VARIANT_ID=your_team_variant_id
+# LEMONSQUEEZY_WEBHOOK_SECRET=your_webhook_secret
 ```
 
 Groq example:
@@ -91,13 +92,7 @@ pnpm run start
 2. Add all environment variables from `.env.example` to Vercel Project Settings.
 3. Set `NEXT_PUBLIC_APP_URL` to the deployed Vercel URL.
 4. Run `pnpm drizzle-kit push` locally against the Neon database, or run the same command from a trusted deployment setup.
-5. In Lemon Squeezy, create subscription variants:
-   - Pro: `$12/mo`, put the variant id in `LEMONSQUEEZY_PRO_VARIANT_ID`.
-   - Team: `$49/mo`, put the variant id in `LEMONSQUEEZY_TEAM_VARIANT_ID`.
-6. Configure the Lemon Squeezy webhook URL:
-   - `https://your-domain.com/api/webhooks/lemonsqueezy`
-   - Add subscription created, updated, cancelled, expired, resumed, paused, and unpaused events.
-7. Put the webhook signing secret in `LEMONSQUEEZY_WEBHOOK_SECRET`.
+5. Payment UI is currently hidden and `/api/billing/checkout` returns disabled. When billing is ready, enable the route and add Lemon Squeezy variables in Vercel.
 
 ## How Generation Works
 
@@ -127,6 +122,6 @@ pnpm run start
 ## Billing Flow
 
 - Clerk handles sign-in and user identity.
-- `/api/billing/checkout` creates a Lemon Squeezy checkout for Pro or Team.
-- Lemon Squeezy sends subscription webhooks to `/api/webhooks/lemonsqueezy`.
-- The webhook verifies `x-signature`, stores the event, and updates the Neon user subscription fields.
+- Lemon Squeezy code is scaffolded for future use.
+- Payment entry points are currently hidden from the UI.
+- `/api/billing/checkout` intentionally returns `503` while billing is paused.

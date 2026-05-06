@@ -37,10 +37,10 @@ export function Nav() {
             Features
           </Link>
           <Link
-            href="#pricing"
+            href="#generator"
             className="px-3 py-1.5 text-sm text-muted hover:text-foreground transition-colors"
           >
-            Pricing
+            Generator
           </Link>
           {isLoaded && !isSignedIn && (
             <SignInButton mode="modal">

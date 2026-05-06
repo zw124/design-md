@@ -4,6 +4,7 @@ import { getOrCreateCurrentUser } from '@/lib/auth';
 import { PLAN_CONFIG, type BillingPlan } from '@/lib/plans';
 
 export const runtime = 'nodejs';
+const BILLING_ENABLED = false;
 
 function getBaseUrl(req: NextRequest) {
   const origin = req.headers.get('origin');
@@ -14,6 +15,13 @@ function getBaseUrl(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  if (!BILLING_ENABLED) {
+    return NextResponse.json(
+      { error: 'Billing is temporarily disabled.' },
+      { status: 503 }
+    );
+  }
+
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 });

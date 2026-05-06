@@ -24,8 +24,8 @@ export default function PrivacyPolicyPage() {
         {
           title: "3. Payments",
           body: [
-            "Payments and checkout are handled by Lemon Squeezy. DESIGN.MD does not store full payment card numbers.",
-            "We store billing-related identifiers, subscription tier, subscription status, customer identifiers, variant identifiers, and webhook payloads needed to keep account access accurate.",
+            "Public payment checkout is currently disabled. DESIGN.MD does not currently collect payment card details through the public website.",
+            "Billing-related database fields and webhook code may exist for future use. If payments are enabled later, billing identifiers and webhook payloads may be stored to keep account access accurate.",
           ],
         },
         {

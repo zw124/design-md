@@ -5,7 +5,7 @@ export default function TermsAndConditionsPage() {
     <LegalPage
       title="Terms and Conditions"
       updated="May 6, 2026"
-      intro="These Terms and Conditions govern access to and use of DESIGN.MD, including the website, AI-assisted generation features, authentication, billing, and related services."
+      intro="These Terms and Conditions govern access to and use of DESIGN.MD, including the website, AI-assisted generation features, authentication, and related services."
       sections={[
         {
           title: "1. Acceptance of Terms",
@@ -29,10 +29,10 @@ export default function TermsAndConditionsPage() {
           ],
         },
         {
-          title: "4. Subscriptions and Billing",
+          title: "4. Billing Status",
           body: [
-            "Paid plans are processed through Lemon Squeezy. Pro is priced at $12 per month and Team is priced at $49 per month unless otherwise stated at checkout.",
-            "Subscription access depends on successful payment and webhook confirmation from the billing provider. Taxes, invoices, and payment processing may be handled by Lemon Squeezy as merchant of record where applicable.",
+            "DESIGN.MD is not currently accepting payments through the public website.",
+            "Paid plan and checkout code may exist in the application for future use, but payment entry points are disabled unless they are explicitly re-enabled by the operator.",
           ],
         },
         {

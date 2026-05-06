@@ -5,19 +5,19 @@ export default function RefundPolicyPage() {
     <LegalPage
       title="Refund Policy"
       updated="May 6, 2026"
-      intro="This Refund Policy explains how refund requests are handled for DESIGN.MD paid subscriptions purchased through Lemon Squeezy."
+      intro="This Refund Policy explains the current payment status for DESIGN.MD and how refund requests will be handled if paid subscriptions are enabled later."
       sections={[
         {
-          title: "1. Paid Plans",
+          title: "1. Current Payment Status",
           body: [
-            "DESIGN.MD offers paid subscription plans, including Pro at $12 per month and Team at $49 per month, unless a different price is shown at checkout.",
-            "All checkout, payment processing, tax handling, invoices, and card processing are handled by Lemon Squeezy.",
+            "DESIGN.MD is not currently accepting payments through the public website.",
+            "Checkout and payment integration code may be present for future use, but payment entry points are disabled unless explicitly re-enabled by the operator.",
           ],
         },
         {
           title: "2. Refund Window",
           body: [
-            "You may request a refund within 7 days of the initial subscription purchase if you are not satisfied with the service.",
+            "If paid subscriptions are enabled later, you may request a refund within 7 days of the initial subscription purchase if you are not satisfied with the service.",
             "Refunds are not guaranteed after the 7-day window, but requests may be reviewed case by case for duplicate charges, technical billing errors, or other exceptional circumstances.",
           ],
         },
@@ -39,7 +39,7 @@ export default function RefundPolicyPage() {
           title: "5. How to Request a Refund",
           body: [
             "To request a refund, contact the DESIGN.MD operator through the support channel listed in your deployment or repository and include the account email, Lemon Squeezy order information, purchase date, and reason for the request.",
-            "Some refunds may need to be processed directly through Lemon Squeezy depending on merchant-of-record and payment processing requirements.",
+            "If Lemon Squeezy payments are enabled later, some refunds may need to be processed directly through Lemon Squeezy depending on merchant-of-record and payment processing requirements.",
           ],
         },
         {
