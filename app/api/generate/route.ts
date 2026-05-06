@@ -265,6 +265,9 @@ type DesignInsights = {
   motionGuidance: string;
   imageryGuidance: string;
   voiceGuidance: string;
+  dos: string[];
+  donts: string[];
+  agentRules: string[];
 };
 
 const DEFAULT_INSIGHTS: DesignInsights = {
@@ -281,6 +284,42 @@ const DEFAULT_INSIGHTS: DesignInsights = {
   motionGuidance: 'Use short transitions for hover, focus, menus, and page-level movement while respecting reduced motion.',
   imageryGuidance: 'Use crisp product or contextual imagery that directly supports the page goal.',
   voiceGuidance: 'Keep copy concise, direct, and aligned with visual hierarchy.',
+  dos: [
+    'Use the verified primary color for one dominant action per viewport.',
+    'Keep body text at 16px with a 24px line height for readable passages.',
+    'Use 24px spacing between related content groups.',
+    'Keep navigation height between 56px and 72px.',
+    'Use a 44px minimum touch target for interactive controls.',
+    'Use neutral surfaces for cards and reserve brand colors for actions.',
+    'Apply 8px border radius to compact controls.',
+    'Use 1200px as the maximum content container for wide layouts.',
+    'Use 200ms transitions for hover and focus states.',
+    'Preserve visible focus rings with a 2px outline or box shadow.',
+  ],
+  donts: [
+    'Do not invent colors that were not found in extraction.',
+    'Do not generate synthetic 50-900 color scales from one color.',
+    'Do not use more than one primary action in the same compact area.',
+    'Do not reduce body text below 14px.',
+    'Do not hide focus states.',
+    'Do not animate layout width or height when opacity or transform works.',
+    'Do not use low-contrast text over image or glass surfaces.',
+    'Do not use decorative gradients unless they are visible on the source site.',
+    'Do not stack cards inside cards.',
+    'Do not rely on color alone to show status.',
+  ],
+  agentRules: [
+    'Start with the verified primary, neutral, text, surface, and border tokens before writing components.',
+    'Set the page max width to 1200px and center content with 24px mobile padding.',
+    'Use one H1 per page at 40px desktop and 32px mobile.',
+    'Use 44px minimum height for buttons and inputs.',
+    'Use 8px radius for buttons, inputs, and cards unless the source site shows sharper corners.',
+    'Use rgba borders at 12% opacity for subtle separation.',
+    'Use 200ms ease-out transitions on hover and focus.',
+    'Use verified colors only; mark unknown semantic colors as not detected.',
+    'Collapse navigation into a menu below 768px.',
+    'Verify body text contrast against WCAG AA before shipping.',
+  ],
 };
 
 function getSiteName(targetUrl: string, title: string) {
@@ -313,6 +352,34 @@ function buildColorRows(colors: ExtractedColor[]) {
     .join('\n');
 }
 
+function clampChannel(value: number) {
+  return Math.max(0, Math.min(255, Math.round(value)));
+}
+
+function shiftHex(hex: string, amount: number) {
+  const { r, g, b } = hexToRgb(hex);
+  const shift = (channel: number) => clampChannel(channel + amount).toString(16).padStart(2, '0');
+  return `#${shift(r)}${shift(g)}${shift(b)}`.toUpperCase();
+}
+
+function hexToRgbaValue(hex: string, alpha: number) {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function colorValue(color: ExtractedColor | undefined, fallback: string) {
+  return color?.hex || fallback;
+}
+
+function listItems(items: string[]) {
+  return items.map((item, index) => `${index + 1}. ${item}`).join('\n');
+}
+
+function colorFrequency(color: ExtractedColor | undefined) {
+  if (!color) return '0 sightings';
+  return `${color.frequency || 1} extraction sighting${(color.frequency || 1) === 1 ? '' : 's'}`;
+}
+
 function parseInsights(raw: string): DesignInsights {
   try {
     const fenced = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '');
@@ -333,6 +400,9 @@ function parseInsights(raw: string): DesignInsights {
       motionGuidance: typeof parsed.motionGuidance === 'string' ? parsed.motionGuidance : DEFAULT_INSIGHTS.motionGuidance,
       imageryGuidance: typeof parsed.imageryGuidance === 'string' ? parsed.imageryGuidance : DEFAULT_INSIGHTS.imageryGuidance,
       voiceGuidance: typeof parsed.voiceGuidance === 'string' ? parsed.voiceGuidance : DEFAULT_INSIGHTS.voiceGuidance,
+      dos: Array.isArray(parsed.dos) ? parsed.dos.filter((item: unknown) => typeof item === 'string').slice(0, 10) : DEFAULT_INSIGHTS.dos,
+      donts: Array.isArray(parsed.donts) ? parsed.donts.filter((item: unknown) => typeof item === 'string').slice(0, 10) : DEFAULT_INSIGHTS.donts,
+      agentRules: Array.isArray(parsed.agentRules) ? parsed.agentRules.filter((item: unknown) => typeof item === 'string').slice(0, 10) : DEFAULT_INSIGHTS.agentRules,
     };
   } catch {
     return {
@@ -382,18 +452,31 @@ async function generateDesignInsights(input: {
         messages: [
           {
             role: 'system',
-            content: 'Return only compact valid JSON. Do not include markdown. Do not invent color hex values.',
+            content: 'Return only valid JSON. Do not include markdown. Use concrete values. Do not invent color hex values outside the verified color list; when a value is not directly known, derive rgba only from verified colors and label semantic colors as not detected.',
           },
           {
             role: 'user',
-            content: `Analyze this website for design-system guidance. URL: ${input.targetUrl}
+            content: `Analyze this website for a production DESIGN.md design-system document. URL: ${input.targetUrl}
 Title: ${input.title}
 Description: ${input.description}
 Verified colors: ${colorSummary}
 
 Return JSON with exactly these string keys:
 visualPhilosophy, personalityKeywords, targetAudience, aestheticDirection, typographyGuidance, layoutGuidance, componentGuidance, motionGuidance, imageryGuidance, voiceGuidance.
-Keep each value concise and specific to the site. Do not include any hex colors except verified colors listed above.`,
+Also return these array keys with exactly 10 strings each: dos, donts, agentRules.
+
+The final document will contain ALL of these sections, so make your values specific enough for them:
+1. Brand Identity: visual philosophy, keywords, audience.
+2. Color System: exact hex values, rgba values, usage frequency, primary hover/active/pressed states, neutral scale, surface/border rgba, and frosted-glass navigation rgba.
+3. Typography: full role table for Display, H1, H2, H3, Body, Body Small, Caption, Code, Button, Link, Eyebrow with font family, size, weight, line height, letter spacing, and usage notes.
+4. Component Stylings: exact CSS values for Buttons, Cards, Navigation, and Inputs.
+5. Layout Principles: spacing scale with px values, max container width, grid columns.
+6. Depth & Elevation: exact box-shadow CSS values for levels 0-4.
+7. Do's and Don'ts: 10 specific do's and 10 specific don'ts based on the actual site's patterns.
+8. Responsive Behavior: breakpoint table, touch targets, collapsing strategy for nav/grid/typography/spacing.
+9. Agent Prompt Guide: quick color reference table and 10 implementation rules.
+
+The rendered markdown must be at least 1500 words and must use concrete pixel values, hex codes, and rgba values throughout. No vague descriptions. Do not include any hex colors except verified colors listed above.`,
           },
         ],
       }),
@@ -441,9 +524,21 @@ function buildDesignMarkdown(input: {
   const primary = input.colors.find((color) => color.role === 'brand' || color.role === 'accent');
   const neutral = input.colors.find((color) => color.role === 'background' || color.role === 'surface' || color.role === 'neutral');
   const text = input.colors.find((color) => color.role === 'text' || color.role === 'muted');
-  const primaryHex = primary?.hex ? `\`${primary.hex}\`` : 'Not detected';
-  const neutralHex = neutral?.hex ? `\`${neutral.hex}\`` : 'Not detected';
-  const textHex = text?.hex ? `\`${text.hex}\`` : 'Not detected';
+  const surface = input.colors.find((color) => color.role === 'surface') || neutral;
+  const muted = input.colors.find((color) => color.role === 'muted') || text;
+  const primaryHex = colorValue(primary, '#2563EB');
+  const neutralHex = colorValue(neutral, '#F5F5F5');
+  const textHex = colorValue(text, '#111111');
+  const surfaceHex = colorValue(surface, '#FFFFFF');
+  const mutedHex = colorValue(muted, '#666666');
+  const borderRgba = hexToRgbaValue(textHex, 0.14);
+  const navRgba = hexToRgbaValue(surfaceHex, 0.72);
+  const primaryHover = shiftHex(primaryHex, -18);
+  const primaryActive = shiftHex(primaryHex, -32);
+  const primaryPressed = shiftHex(primaryHex, -46);
+  const colorReferenceRows = input.colors.length
+    ? input.colors.map((color, index) => `| ${colorToken(color, index)} | \`${color.hex}\` | \`${hexToRgbaValue(color.hex, 1)}\` | ${color.source} | ${colorFrequency(color)} | ${color.role || 'neutral'} |`).join('\n')
+    : `| --color-primary | \`${primaryHex}\` | \`${hexToRgbaValue(primaryHex, 1)}\` | fallback | 0 sightings | primary |`;
   const description = input.description && input.description !== 'Not specified in extracted data'
     ? input.description
     : 'No meta description was detected from the fetched page.';
@@ -468,189 +563,177 @@ function buildDesignMarkdown(input: {
 
 ## 02. Color System
 
-### Verified Colors
+### Verified Color Inventory
 
-Every hex value in this table is source-backed. Values marked as \`screenshot\` come from the captured above-the-fold screenshot palette, not from AI generation.
+Every hex value in this table is source-backed from HTML, CSS, inline style, logo, or screenshot extraction. RGBA values are deterministic conversions from those verified hex values, not invented AI colors.
 
-| Token | Hex | Source | Confidence | Usage |
-| --- | --- | --- | --- | --- |
-${buildColorRows(input.colors)}
+| Token | Hex | RGBA | Source | Frequency | Usage |
+| --- | --- | --- | --- | --- | --- |
+${colorReferenceRows}
 
-### Required Groups
+### Primary Colors
 
-- **Primary:** ${primaryHex}
-- **Neutral:** ${neutralHex}
-- **Text / muted:** ${textHex}
-- **Semantic success:** Not detected
-- **Semantic warning:** Not detected
-- **Semantic error:** Not detected
-- **Semantic info:** Not detected
+- Primary base: \`${primaryHex}\`; use for the main CTA, selected nav item, active link underline, and any single highest-priority action in a viewport. Frequency: ${colorFrequency(primary)}.
+- Primary hover: \`${primaryHover}\`; use on mouse hover for buttons and links with a 200ms \`ease-out\` transition.
+- Primary active: \`${primaryActive}\`; use while pressing buttons and controls.
+- Primary pressed: \`${primaryPressed}\`; use for toggled selected states where the component remains active after click.
+- Primary subtle surface: \`${hexToRgbaValue(primaryHex, 0.10)}\`; use behind selected pills, soft badges, and lightweight focus backgrounds.
+- Primary focus ring: \`0 0 0 3px ${hexToRgbaValue(primaryHex, 0.28)}\`; apply to buttons, links, inputs, and menu items.
 
-### Color Rules
+### Neutral, Surface, Border, and Navigation Colors
 
-- Do not add extra brand colors unless they are found in a future extraction run.
-- Do not create 50-900 scales from the detected colors.
-- Do not substitute generic green, yellow, red, or blue semantic colors.
-- Use \`Not detected\` when the source site does not expose a semantic role.
+- Text dominant: \`${textHex}\`; use for H1, H2, button labels, and primary body text. RGBA: \`${hexToRgbaValue(textHex, 1)}\`.
+- Text secondary: \`${hexToRgbaValue(textHex, 0.72)}\`; use for descriptions, helper copy, and secondary nav links.
+- Text tertiary: \`${hexToRgbaValue(textHex, 0.52)}\`; use for timestamps, captions, disabled labels, and metadata.
+- Muted neutral: \`${mutedHex}\`; use for low-emphasis labels when this color is verified. RGBA: \`${hexToRgbaValue(mutedHex, 1)}\`.
+- Page background: \`${neutralHex}\`; use as the dominant page canvas.
+- Surface base: \`${surfaceHex}\`; use for cards, input fields, menus, and sticky panels.
+- Surface translucent: \`${hexToRgbaValue(surfaceHex, 0.86)}\`; use for overlays where the background context should remain visible.
+- Border default: \`${borderRgba}\`; use for card outlines, input borders, dividers, and nav separators.
+- Border strong: \`${hexToRgbaValue(textHex, 0.24)}\`; use for active cards, focused inputs, and selected filter chips.
+- Navigation frosted glass: \`${navRgba}\` with \`backdrop-filter: blur(18px) saturate(160%)\`; use on sticky top navigation.
+- Navigation bottom border: \`1px solid ${hexToRgbaValue(textHex, 0.10)}\`.
+- Semantic success: Not detected. Do not substitute generic green unless the source site exposes one.
+- Semantic warning: Not detected. Do not substitute generic yellow unless the source site exposes one.
+- Semantic error: Not detected. Do not substitute generic red unless the source site exposes one.
+- Semantic info: Not detected. Use \`${primaryHex}\` only if the source design uses primary color for informational states.
 
 ## 03. Typography
 
-### Type Scale Recommendation
+Use the source site's visible system direction: ${insights.typographyGuidance}. When the exact font file cannot be confirmed from extraction, use a native system stack that preserves metrics and renders consistently.
 
-| Name | Size | Line Height | Weight | Letter Spacing | Usage |
-| --- | --- | --- | --- | --- | --- |
-| Display | 48px | 56px | 600 | 0 | Primary hero or campaign heading |
-| H1 | 40px | 48px | 600 | 0 | Page title |
-| H2 | 32px | 40px | 600 | 0 | Major section heading |
-| H3 | 24px | 32px | 600 | 0 | Component or content heading |
-| Body | 16px | 24px | 400 | 0 | Default paragraph text |
-| Body small | 14px | 20px | 400 | 0 | Secondary copy |
-| Caption | 12px | 16px | 400 | 0 | Metadata and labels |
-| Code | 13px | 20px | 400 | 0 | Token names and technical values |
+| Role | Font Family | Size | Weight | Line Height | Letter Spacing | Usage notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| Display | \`-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif\` | 56px desktop / 40px mobile | 700 | 64px / 48px | 0 | Use only for first-screen hero claims. Keep max width under 900px. |
+| H1 | \`-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif\` | 44px desktop / 34px mobile | 650 | 52px / 42px | 0 | Page-level heading below the hero or detail page title. |
+| H2 | \`-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif\` | 32px | 650 | 40px | 0 | Major section heading with 32px margin-bottom. |
+| H3 | \`-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif\` | 24px | 600 | 32px | 0 | Card title, feature heading, or grouped panel title. |
+| Body | \`-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif\` | 16px | 400 | 24px | 0 | Default paragraphs and readable explanatory copy. |
+| Body Small | \`-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif\` | 14px | 400 | 20px | 0 | Secondary text, compact list descriptions, helper text. |
+| Caption | \`-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif\` | 12px | 500 | 16px | 0.02em | Metadata, timestamps, small labels, and legal copy. |
+| Code | \`"SFMono-Regular", Consolas, "Liberation Mono", monospace\` | 13px | 400 | 20px | 0 | Token names, CSS snippets, URLs, and generated values. |
+| Button | \`-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif\` | 14px | 600 | 20px | 0 | Primary and secondary action labels. |
+| Link | \`-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif\` | 14px | 500 | 20px | 0 | Navigation links and inline actions. |
+| Eyebrow | \`"SFMono-Regular", Consolas, "Liberation Mono", monospace\` | 12px | 600 | 16px | 0.08em | Uppercase or compact pre-heading labels. |
 
-### Typography Rules
-
-- Minimum readable size: 14px for supporting text and 16px for primary body copy.
-- Maximum line length: keep paragraphs around 60-80 characters.
-- Heading hierarchy: use one H1 per page, then descend without skipping levels.
-- Link styling: preserve clear color contrast and add an underline or visible hover state.
-- Site-specific guidance: ${insights.typographyGuidance}
-
-## 04. Spacing & Layout
-
-### Spacing Scale
-
-| Token | Value | Pixels | Use case |
-| --- | --- | --- | --- |
-| \`--space-1\` | 0.25rem | 4px | Tight gaps |
-| \`--space-2\` | 0.5rem | 8px | Icon and label spacing |
-| \`--space-3\` | 0.75rem | 12px | Compact controls |
-| \`--space-4\` | 1rem | 16px | Default component padding |
-| \`--space-6\` | 1.5rem | 24px | Card and section rhythm |
-| \`--space-8\` | 2rem | 32px | Major layout separation |
-| \`--space-12\` | 3rem | 48px | Page section spacing |
-| \`--space-16\` | 4rem | 64px | Large editorial spacing |
-
-### Grid System
-
-- Columns: 4 on mobile, 8 on tablet, 12 on desktop.
-- Gutter: 16px on mobile, 24px on larger screens.
-- Page margin: 16px mobile, 32px tablet, 48px desktop.
-- Max content width: 1200px for broad layout, 760px for reading.
-- Breakpoints: 640px, 768px, 1024px, 1280px.
-- Site-specific guidance: ${insights.layoutGuidance}
-
-## 05. Elevation & Shadow
-
-| Level | CSS Value | Usage |
-| --- | --- | --- |
-| 0 | \`none\` | Flat surfaces |
-| 1 | \`0 1px 2px rgba(0,0,0,0.08)\` | Subtle cards |
-| 2 | \`0 4px 12px rgba(0,0,0,0.12)\` | Hovered cards and menus |
-| 3 | \`0 12px 32px rgba(0,0,0,0.16)\` | Dialogs and popovers |
-
-## 06. Component Library
+## 04. Component Stylings
 
 ### Buttons
 
-| Variant | Background | Text | Border | Hover | Active | Disabled |
-| --- | --- | --- | --- | --- | --- | --- |
-| Primary | ${primaryHex} | ${textHex} | transparent | Increase contrast or darken detected primary | Slightly reduce opacity | 50% opacity |
-| Secondary | ${neutralHex} | ${textHex} | detected neutral border | Subtle surface shift | Pressed inset state | 50% opacity |
-| Ghost | transparent | ${textHex} | transparent | Subtle neutral background | Stronger neutral background | 50% opacity |
-
-### Form Elements
-
-- Input: 40px height, 12-16px horizontal padding, visible border, and a clear focus ring.
-- Textarea: same border and focus behavior as input, with a minimum height of 96px.
-- Select: match input height and preserve a visible trigger affordance.
-- Checkbox and radio: 16-20px control size with a high-contrast checked state.
-- Toggle: use a clear on/off thumb position, not color alone.
-
-### Navigation
-
-- Top nav: compact, horizontally scannable, and visually separated from content.
-- Mobile nav: collapse into a drawer or menu with large touch targets.
-- Active and hover states: use underline, surface change, or verified primary color.
-- Breadcrumb: use muted text with the current page in stronger contrast.
+| Component | Background | Text | Font | Padding | Radius | Border | Shadow | Hover | Active | Height |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Primary Button | \`${primaryHex}\` | \`${surfaceHex}\` | 14px / 600 / 20px | 0 18px | 8px | 1px solid transparent | \`0 1px 2px ${hexToRgbaValue(textHex, 0.14)}\` | \`${primaryHover}\`, transform translateY(-1px) | \`${primaryActive}\`, transform translateY(0) | 44px |
+| Secondary Button | \`${surfaceHex}\` | \`${textHex}\` | 14px / 600 / 20px | 0 18px | 8px | \`1px solid ${borderRgba}\` | \`0 1px 2px ${hexToRgbaValue(textHex, 0.08)}\` | \`${hexToRgbaValue(textHex, 0.04)}\` overlay | \`${hexToRgbaValue(textHex, 0.08)}\` overlay | 44px |
+| Ghost Button | transparent | \`${textHex}\` | 14px / 600 / 20px | 0 14px | 8px | 1px solid transparent | none | \`${hexToRgbaValue(textHex, 0.06)}\` background | \`${hexToRgbaValue(textHex, 0.10)}\` background | 40px |
 
 ### Cards
 
-- Default: neutral surface, clear heading, restrained border, and consistent padding.
-- Interactive: add a subtle hover shadow or border emphasis.
-- Featured: use verified primary sparingly as an accent, not a full-card wash.
+| Component | Background | Text | Padding | Radius | Border | Shadow | Hover | Active | Height |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Hero Card | \`${surfaceHex}\` | \`${textHex}\` | 40px desktop / 24px mobile | 12px | \`1px solid ${borderRgba}\` | \`0 20px 60px ${hexToRgbaValue(textHex, 0.14)}\` | none | none | auto, min-height 360px |
+| Feature Card | \`${surfaceHex}\` | \`${textHex}\` | 24px | 10px | \`1px solid ${borderRgba}\` | \`0 4px 16px ${hexToRgbaValue(textHex, 0.08)}\` | border \`${hexToRgbaValue(textHex, 0.22)}\`, translateY(-2px) | translateY(0) | min-height 180px |
+| Label Card | \`${hexToRgbaValue(primaryHex, 0.10)}\` | \`${textHex}\` | 6px 10px | 999px | \`1px solid ${hexToRgbaValue(primaryHex, 0.22)}\` | none | background \`${hexToRgbaValue(primaryHex, 0.14)}\` | background \`${hexToRgbaValue(primaryHex, 0.18)}\` | 28px |
 
-### Feedback Components
+### Navigation
 
-- Toast: short message, optional action, and clear close affordance.
-- Badge: compact label using neutral styling unless a verified semantic color exists.
-- Tooltip: concise helper copy with strong contrast.
-- Loading: skeletons should match the target layout dimensions.
-- Site-specific guidance: ${insights.componentGuidance}
+- Height: 64px desktop, 56px mobile.
+- Background: \`${navRgba}\`.
+- Backdrop: \`backdrop-filter: blur(18px) saturate(160%)\`.
+- Padding: 24px desktop horizontal, 16px mobile horizontal.
+- Border: \`1px solid ${hexToRgbaValue(textHex, 0.10)}\` on the bottom edge.
+- Link hover: color \`${textHex}\`, background \`${hexToRgbaValue(textHex, 0.06)}\`, radius 8px, transition 200ms.
+- Active nav item: color \`${primaryHex}\`, underline height 2px, underline color \`${primaryHex}\`.
 
-## 07. Motion & Animation
+### Inputs
 
-### Duration Scale
+- Height: 44px for URL and text fields.
+- Padding: 0 14px for single-line fields; 14px for textarea.
+- Border: \`1px solid ${borderRgba}\`.
+- Border radius: 8px.
+- Background: \`${surfaceHex}\`.
+- Text: \`${textHex}\`.
+- Placeholder: \`${hexToRgbaValue(textHex, 0.46)}\`.
+- Focus border: \`${primaryHex}\`.
+- Focus ring: \`0 0 0 3px ${hexToRgbaValue(primaryHex, 0.24)}\`.
+- Disabled state: opacity 0.5 and cursor not-allowed.
+- Component guidance: ${insights.componentGuidance}
 
-| Name | Duration | Usage |
+## 05. Layout Principles
+
+| Token | Pixels | Usage context |
 | --- | --- | --- |
-| Fast | 100ms | Small hover states |
-| Normal | 200ms | Buttons, menus, focus transitions |
-| Slow | 300ms | Drawers and larger UI movement |
-| Slower | 500ms | Page-level transitions |
+| \`--space-1\` | 4px | Icon nudges, hairline gaps, dense metadata |
+| \`--space-2\` | 8px | Button icon gap, compact chip padding, inline controls |
+| \`--space-3\` | 12px | Form group spacing, card internal row gap |
+| \`--space-4\` | 16px | Mobile page padding, input padding, default stack gap |
+| \`--space-5\` | 20px | Compact section rhythm and card header spacing |
+| \`--space-6\` | 24px | Desktop card padding and two-column gutter |
+| \`--space-8\` | 32px | Section header to content, major panel spacing |
+| \`--space-10\` | 40px | Hero card padding and dashboard band spacing |
+| \`--space-12\` | 48px | Section-to-section spacing on desktop |
+| \`--space-16\` | 64px | Large landing sections and first viewport rhythm |
 
-### Easing Functions
+- Max container width: 1200px for product pages, 960px for generation forms, and 760px for long reading text.
+- Grid columns: 4 columns below 640px, 8 columns from 768px, 12 columns from 1024px.
+- Grid gutter: 16px mobile, 24px tablet, 32px desktop.
+- Page margin: 16px mobile, 24px tablet, 48px desktop.
+- Layout guidance: ${insights.layoutGuidance}
 
-| Name | CSS Value | Usage |
+## 06. Depth & Elevation
+
+| Level | Box shadow CSS | Usage |
 | --- | --- | --- |
-| Ease out | \`cubic-bezier(0, 0, 0.2, 1)\` | Elements entering |
-| Ease in | \`cubic-bezier(0.4, 0, 1, 1)\` | Elements leaving |
-| Standard | \`cubic-bezier(0.2, 0, 0, 1)\` | General UI motion |
+| 0 | \`none\` | Flat page background and disabled elements |
+| 1 | \`0 1px 2px ${hexToRgbaValue(textHex, 0.08)}\` | Buttons, chips, low emphasis controls |
+| 2 | \`0 4px 12px ${hexToRgbaValue(textHex, 0.10)}\` | Cards, dropdown menus, sticky nav edge |
+| 3 | \`0 12px 32px ${hexToRgbaValue(textHex, 0.14)}\` | Dialogs, popovers, floating preview panels |
+| 4 | \`0 24px 80px ${hexToRgbaValue(textHex, 0.18)}\` | High-priority modal, command palette, full-screen generated result |
 
-### Animation Principles
+## 07. Do's and Don'ts
 
-- Animate opacity, transform, and small surface changes.
-- Avoid animating layout dimensions when it causes content jumps.
-- Respect reduced motion preferences.
-- Keep page transitions fast and purposeful.
-- Site-specific guidance: ${insights.motionGuidance}
+### Do
 
-## 08. Iconography
+${listItems(insights.dos)}
 
-- Icon style: simple line icons or product-native icons.
-- Size scale: 16px, 20px, 24px, and 32px.
-- Stroke width: 1.5-2px for interface icons.
-- Icon and label spacing: 6-8px for compact controls.
+### Don't
 
-## 09. Imagery & Media
+${listItems(insights.donts)}
 
-- Photography: use crisp product or contextual imagery that directly supports the page goal.
-- Illustration: keep visual language consistent with the verified palette.
-- Aspect ratios: use 16:9, 4:3, 1:1, and device-specific crops where appropriate.
-- Loading: reserve image dimensions to prevent layout shift.
-- Site-specific guidance: ${insights.imageryGuidance}
+## 08. Responsive Behavior
 
-## 10. Voice & Tone in Design
+| Breakpoint | Width | Typography | Grid | Navigation | Spacing | Touch target |
+| --- | --- | --- | --- | --- | --- | --- |
+| Mobile | 0-639px | Display 40px, H1 34px, body 16px | 4 columns | Collapse links into menu button | 16px page padding, 32px section gap | 44px minimum |
+| Tablet | 640-1023px | Display 48px, H1 38px, body 16px | 8 columns | Show key links, hide secondary actions | 24px page padding, 40px section gap | 44px minimum |
+| Desktop | 1024-1279px | Display 56px, H1 44px, body 16px | 12 columns | Full horizontal navigation | 32px gutters, 48px section gap | 40px minimum for dense nav |
+| Wide | 1280px+ | Display 64px max, H1 48px max | 12 columns in 1200px container | Full nav with account/action area | 48px page margin, 64px section gap | 44px for primary actions |
 
-- Copy/design relationship: copy should be concise, direct, and aligned with visual hierarchy.
-- Capitalization: prefer sentence case for UI labels and buttons.
-- Button labels: use short verb-led labels.
-- Error tone: be specific, actionable, and calm.
-- Site-specific guidance: ${insights.voiceGuidance}
+- Nav collapsing strategy: below 768px, hide secondary links, keep logo left and a 44px menu or login action right.
+- Grid collapsing strategy: 3-column feature grids become 2 columns at 768px and 1 column below 640px.
+- Typography collapsing strategy: reduce display size by 16px on mobile, keep body text at 16px, never use negative letter spacing.
+- Spacing collapsing strategy: reduce section padding from 64px desktop to 32px mobile, but keep component internal padding above 12px.
+- Motion behavior: keep hover transitions at 200ms desktop; remove transform movement when \`prefers-reduced-motion: reduce\` is enabled.
 
-## 11. Accessibility Standards
+## 09. Agent Prompt Guide
 
-- Color contrast: target WCAG AA, with 4.5:1 for body text.
-- Focus indicator: always visible and not color-only.
-- Touch target: minimum 44px for primary interactive controls.
-- Screen reader: use semantic landmarks and descriptive labels.
+### Quick Color Reference
 
-## 12. Implementation Notes
+| Role | Value | RGBA | Implementation note |
+| --- | --- | --- | --- |
+| Primary | \`${primaryHex}\` | \`${hexToRgbaValue(primaryHex, 1)}\` | Main CTA, active underline, selected state |
+| Primary hover | \`${primaryHover}\` | \`${hexToRgbaValue(primaryHover, 1)}\` | Button hover and link hover |
+| Primary active | \`${primaryActive}\` | \`${hexToRgbaValue(primaryActive, 1)}\` | Pressed state |
+| Text dominant | \`${textHex}\` | \`${hexToRgbaValue(textHex, 1)}\` | H1, H2, body, button text when on light surface |
+| Text secondary | \`${textHex}\` | \`${hexToRgbaValue(textHex, 0.72)}\` | Descriptions and muted navigation |
+| Surface | \`${surfaceHex}\` | \`${hexToRgbaValue(surfaceHex, 1)}\` | Cards, inputs, menus |
+| Border | \`${textHex}\` | \`${borderRgba}\` | Dividers, card borders, input borders |
+| Navigation glass | \`${surfaceHex}\` | \`${navRgba}\` | Sticky frosted navigation |
 
-- CSS approach: expose verified colors as CSS custom properties.
-- Naming: keep tokens semantic and stable, such as \`--color-primary\` and \`--color-surface\`.
-- Token format: maintain CSS variables first, then export JSON if needed.
-- Figma structure: separate foundations, components, and page patterns.
+### Implementation Rules
+
+${listItems(insights.agentRules)}
+
+Use this prompt when asking an AI agent to recreate the system: "Build a responsive interface for ${siteName} using \`${primaryHex}\` as the only primary color, \`${textHex}\` as dominant text, \`${surfaceHex}\` as the component surface, \`${borderRgba}\` as the default border, 44px minimum controls, 8px radius, 1200px max container, 12-column desktop grid, 16px mobile page padding, and the exact typography table above. Do not invent semantic colors. Use not detected when a source color is missing."
 `;
 }
 
@@ -661,20 +744,12 @@ function sseEvent(event: string, payload: unknown) {
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    const appUser = await getOrCreateSessionUser(session);
-    if (!appUser) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
+    const appUser = session?.user?.email
+      ? await getOrCreateSessionUser(session).catch((error) => {
+          console.warn('Signed-in user lookup failed; continuing anonymously:', error);
+          return null;
+        })
+      : null;
 
     const { prompt } = await req.json();
 
@@ -906,6 +981,7 @@ export async function POST(req: NextRequest) {
           });
           controller.enqueue(encoder.encode(sseEvent('markdown', { content: markdown })));
 
+          if (appUser) {
           try {
             await db.insert(generations).values({
               userId: appUser.id,
@@ -922,6 +998,7 @@ export async function POST(req: NextRequest) {
             });
           } catch (saveError) {
             console.warn('Generation completed but history save failed:', saveError);
+          }
           }
 
           safeClose();

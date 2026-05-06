@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { signIn, signOut, useSession } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
 
 export function Nav() {
@@ -44,14 +44,6 @@ export function Nav() {
           >
             Generator
           </Link>
-          {isLoaded && !isSignedIn && (
-            <button
-              onClick={() => signIn("google")}
-              className="px-4 py-1.5 text-sm font-medium bg-accent text-[#0A0A08] rounded hover:bg-accent-muted transition-all duration-150 hover:scale-[1.02]"
-            >
-              Sign in with Google
-            </button>
-          )}
           {isLoaded && isSignedIn && (
             <button
               onClick={() => signOut()}

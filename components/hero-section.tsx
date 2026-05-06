@@ -14,11 +14,14 @@ const STATUS_STEPS = [
 ]
 
 const QUICK_TRIES = ["stripe.com", "linear.app", "vercel.com", "apple.com"]
+const FREE_GENERATION_LIMIT = 3
+const USAGE_STORAGE_KEY = "designmd:generation-count"
 
 export function HeroSection() {
   const { data: session, status } = useSession()
   const isLoaded = status !== "loading"
   const isSignedIn = Boolean(session?.user)
+  const [usageCount, setUsageCount] = useState(0)
   const [url, setUrl] = useState("")
   const [loading, setLoading] = useState(false)
   const [statusIndex, setStatusIndex] = useState(0)
@@ -33,7 +36,10 @@ export function HeroSection() {
   const handleGenerate = async (targetUrl?: string) => {
     const urlToUse = targetUrl ?? url
     if (!urlToUse.trim()) return
-    if (!isSignedIn) return
+    if (!isSignedIn && usageCount >= FREE_GENERATION_LIMIT) {
+      alert("Free limit reached. Sign in with Google to keep generating.")
+      return
+    }
     if (targetUrl) setUrl(targetUrl)
 
     if (generationAbort.current) {
@@ -131,6 +137,11 @@ export function HeroSection() {
       } catch (streamError) {
         console.error(streamError)
       }
+      if (!isSignedIn) {
+        const nextCount = Math.min(usageCount + 1, FREE_GENERATION_LIMIT)
+        setUsageCount(nextCount)
+        localStorage.setItem(USAGE_STORAGE_KEY, String(nextCount))
+      }
       setIsGenerating(false);
     } catch(err: any) {
       if (err?.name === 'AbortError') return
@@ -148,6 +159,13 @@ export function HeroSection() {
       outputRef.current.scrollTop = 0
     }
   }, [showOutput])
+
+  useEffect(() => {
+    const stored = Number(localStorage.getItem(USAGE_STORAGE_KEY) || "0")
+    if (Number.isFinite(stored)) {
+      setUsageCount(Math.max(0, Math.min(stored, FREE_GENERATION_LIMIT)))
+    }
+  }, [])
 
   useEffect(() => {
     return () => {
@@ -192,18 +210,23 @@ export function HeroSection() {
             />
             <button
               onClick={() => handleGenerate()}
-              disabled={loading || !isLoaded || !isSignedIn}
+              disabled={loading || !isLoaded}
               className="px-5 py-2.5 text-sm font-medium bg-accent text-[#0A0A08] rounded hover:bg-accent-muted transition-all duration-150 hover:scale-[1.02] disabled:opacity-50 disabled:scale-100 whitespace-nowrap"
             >
-              {loading ? "Generating..." : isSignedIn ? "Generate →" : "Sign in to generate"}
+              {loading ? "Generating..." : "Generate →"}
             </button>
           </div>
-          {!isSignedIn && (
+          {!isSignedIn && usageCount < FREE_GENERATION_LIMIT && (
+            <p className="mb-4 text-xs text-muted font-mono">
+              {FREE_GENERATION_LIMIT - usageCount} free generations left in this browser.
+            </p>
+          )}
+          {!isSignedIn && usageCount >= FREE_GENERATION_LIMIT && (
             <button
               onClick={() => signIn("google")}
               className="mb-4 text-xs text-accent hover:underline font-mono"
             >
-              Sign in with Google to unlock the generator
+              Free limit reached. Sign in with Google to keep generating.
             </button>
           )}
 
@@ -214,7 +237,6 @@ export function HeroSection() {
               <button
                 key={site}
                 onClick={() => handleGenerate(site)}
-                disabled={!isSignedIn}
                 className="text-xs px-2.5 py-1 rounded border border-border text-muted hover:text-foreground hover:border-[#444442] transition-all"
               >
                 {site}
