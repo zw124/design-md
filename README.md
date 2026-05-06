@@ -22,7 +22,6 @@ The app combines deterministic Markdown generation with AI-written site guidance
 - Tailwind CSS 4
 - OpenAI-compatible chat completions API
 - Auth.js authentication with Google OAuth
-- Lemon Squeezy checkout and webhooks are scaffolded but currently disabled
 - Neon Postgres with Drizzle ORM
 - Microlink screenshot and palette API
 
@@ -33,7 +32,6 @@ The app combines deterministic Markdown generation with AI-written site guidance
 - An OpenAI-compatible API key
 - Google OAuth credentials for Auth.js
 - Neon Postgres database URL
-- Lemon Squeezy keys are optional while billing is disabled
 
 ## Environment Variables
 
@@ -52,13 +50,6 @@ AUTH_GOOGLE_ID=your_google_oauth_client_id
 AUTH_GOOGLE_SECRET=your_google_oauth_client_secret
 
 DATABASE_URL=postgresql://user:password@host/database?sslmode=require
-
-# Optional: billing is currently disabled in /api/billing/checkout
-# LEMONSQUEEZY_API_KEY=your_lemon_squeezy_api_key
-# LEMONSQUEEZY_STORE_ID=your_store_id
-# LEMONSQUEEZY_PRO_VARIANT_ID=your_pro_variant_id
-# LEMONSQUEEZY_TEAM_VARIANT_ID=your_team_variant_id
-# LEMONSQUEEZY_WEBHOOK_SECRET=your_webhook_secret
 ```
 
 Groq example:
@@ -94,7 +85,7 @@ pnpm run start
 2. Add all environment variables from `.env.example` to Vercel Project Settings.
 3. Set `NEXT_PUBLIC_APP_URL` to the deployed Vercel URL.
 4. Run `pnpm drizzle-kit push` locally against the Neon database, or run the same command from a trusted deployment setup.
-5. Payment UI is currently hidden and `/api/billing/checkout` returns disabled. When billing is ready, enable the route and add Lemon Squeezy variables in Vercel.
+5. Deploy the app after the database schema is synced.
 
 ## How Generation Works
 
@@ -121,9 +112,7 @@ pnpm run build
 pnpm run start
 ```
 
-## Billing Flow
+## Authentication
 
 - Auth.js handles Google sign-in and user identity.
-- Lemon Squeezy code is scaffolded for future use.
-- Payment entry points are currently hidden from the UI.
-- `/api/billing/checkout` intentionally returns `503` while billing is paused.
+- Generated documents are associated with the signed-in user's application user record.

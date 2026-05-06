@@ -29,10 +29,10 @@ export default function TermsAndConditionsPage() {
           ],
         },
         {
-          title: "4. Billing Status",
+          title: "4. Payment Status",
           body: [
-            "DESIGN.MD is not currently accepting payments through the public website.",
-            "Paid plan and checkout code may exist in the application for future use, but payment entry points are disabled unless they are explicitly re-enabled by the operator.",
+            "DESIGN.MD does not accept payments through the public website.",
+            "The service does not include public paid plans, checkout pages, or subscription billing.",
           ],
         },
         {

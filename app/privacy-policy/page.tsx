@@ -11,21 +11,21 @@ export default function PrivacyPolicyPage() {
           title: "1. Information We Collect",
           body: [
             "We collect account information provided through Auth.js and Google OAuth, such as your user identifier, email address, and basic profile details.",
-            "We collect submitted URLs, generated Markdown output, extracted color data, billing status, and service usage metadata needed to operate the product.",
+            "We collect submitted URLs, generated Markdown output, extracted color data, and service usage metadata needed to operate the product.",
           ],
         },
         {
           title: "2. Authentication",
           body: [
             "Authentication is handled by Auth.js with Google OAuth. Google may process login credentials, session data, device information, and security information according to its own privacy practices.",
-            "DESIGN.MD stores an Auth.js account identifier so generated documents and subscription status can be associated with your account.",
+            "DESIGN.MD stores an Auth.js account identifier so generated documents can be associated with your account.",
           ],
         },
         {
           title: "3. Payments",
           body: [
-            "Public payment checkout is currently disabled. DESIGN.MD does not currently collect payment card details through the public website.",
-            "Billing-related database fields and webhook code may exist for future use. If payments are enabled later, billing identifiers and webhook payloads may be stored to keep account access accurate.",
+            "DESIGN.MD does not collect payment card details through the public website.",
+            "The application does not include an active payment checkout or payment webhook flow.",
           ],
         },
         {
@@ -45,21 +45,21 @@ export default function PrivacyPolicyPage() {
         {
           title: "6. How We Use Information",
           body: [
-            "We use collected information to authenticate users, generate DESIGN.md documents, save generation history, process subscriptions, enforce plan access, debug issues, and improve product reliability.",
-            "We do not sell personal information. We may share information with service providers only as needed to operate authentication, hosting, database, billing, analytics, and AI functionality.",
+            "We use collected information to authenticate users, generate DESIGN.md documents, save generation history, debug issues, and improve product reliability.",
+            "We do not sell personal information. We may share information with service providers only as needed to operate authentication, hosting, database, analytics, and AI functionality.",
           ],
         },
         {
           title: "7. Data Retention",
           body: [
-            "We retain account, billing, webhook, and generation data for as long as needed to provide the service, comply with obligations, resolve disputes, and maintain business records.",
+            "We retain account and generation data for as long as needed to provide the service, comply with obligations, resolve disputes, and maintain business records.",
             "You may request deletion of account-associated application data through the support channel listed by the DESIGN.MD operator.",
           ],
         },
         {
           title: "8. Security",
           body: [
-            "We use reasonable technical and organizational measures to protect application data, including provider-managed authentication, database access controls, and webhook signature verification.",
+            "We use reasonable technical and organizational measures to protect application data, including provider-managed authentication and database access controls.",
             "No online service can guarantee absolute security. You are responsible for protecting your login credentials and restricting access to your account.",
           ],
         },

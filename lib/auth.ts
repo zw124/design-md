@@ -35,9 +35,6 @@ export async function getOrCreateSessionUser(session: Session | null) {
       authUserId,
       email,
       name,
-      subscriptionTier: "free",
-      subscriptionStatus: "inactive",
-      generationsLimit: 3,
     })
     .returning()
 
