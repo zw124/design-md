@@ -11,15 +11,21 @@ export function Footer() {
         <p className="text-xs text-muted font-mono text-center">
           © 2026 DESIGN.MD — Built for people who care about design systems
         </p>
-        <div className="flex items-center gap-6">
+        <div className="flex flex-wrap items-center justify-center gap-5">
           <Link href="#features" className="text-xs text-muted hover:text-foreground transition-colors font-mono">
             Features
           </Link>
           <Link href="#pricing" className="text-xs text-muted hover:text-foreground transition-colors font-mono">
             Pricing
           </Link>
-          <Link href="/" className="text-xs text-muted hover:text-foreground transition-colors font-mono">
-            Home
+          <Link href="/terms-and-conditions" className="text-xs text-muted hover:text-foreground transition-colors font-mono">
+            Terms
+          </Link>
+          <Link href="/privacy-policy" className="text-xs text-muted hover:text-foreground transition-colors font-mono">
+            Privacy
+          </Link>
+          <Link href="/refund-policy" className="text-xs text-muted hover:text-foreground transition-colors font-mono">
+            Refunds
           </Link>
         </div>
       </div>
