@@ -3,7 +3,7 @@ import { relations } from 'drizzle-orm';
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
-  authUserId: varchar('auth_user_id', { length: 255 }).unique().notNull(),
+  legacyUserId: varchar('clerk_id', { length: 255 }),
   email: varchar('email', { length: 255 }).notNull(),
   name: varchar('name', { length: 255 }),
   createdAt: timestamp('created_at').defaultNow(),
