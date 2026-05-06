@@ -14,6 +14,12 @@ export async function getOrCreateCurrentUser() {
   }
 
   const existing = await db.query.users.findFirst({
+    columns: {
+      id: true,
+      clerkId: true,
+      email: true,
+      name: true,
+    },
     where: eq(users.clerkId, clerkUser.id),
   });
 
@@ -38,9 +44,6 @@ export async function getOrCreateCurrentUser() {
       clerkId: clerkUser.id,
       email,
       name,
-      subscriptionTier: 'free',
-      subscriptionStatus: 'inactive',
-      generationsLimit: 3,
     })
     .returning();
 
