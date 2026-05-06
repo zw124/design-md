@@ -904,20 +904,25 @@ export async function POST(req: NextRequest) {
             colors: extracted.actualColors,
             insights,
           });
-          await db.insert(generations).values({
-            userId: appUser.id,
-            url: targetUrl,
-            markdown,
-            colors: extracted.actualColors.map((color) => ({
-              hex: color.hex,
-              source: color.source,
-              role: color.role,
-              confidence: color.confidence,
-            })),
-            aiStatus: insights.aiStatus,
-            aiModel: insights.aiModel,
-          });
           controller.enqueue(encoder.encode(sseEvent('markdown', { content: markdown })));
+
+          try {
+            await db.insert(generations).values({
+              userId: appUser.id,
+              url: targetUrl,
+              markdown,
+              colors: extracted.actualColors.map((color) => ({
+                hex: color.hex,
+                source: color.source,
+                role: color.role,
+                confidence: color.confidence,
+              })),
+              aiStatus: insights.aiStatus,
+              aiModel: insights.aiModel,
+            });
+          } catch (saveError) {
+            console.warn('Generation completed but history save failed:', saveError);
+          }
 
           safeClose();
         } catch (error) {
