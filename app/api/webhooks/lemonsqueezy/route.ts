@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
   const eventName = String(payload?.meta?.event_name || '');
   const eventId = String(payload?.meta?.webhook_id || payload?.data?.id || crypto.randomUUID());
   const customData = payload?.meta?.custom_data || {};
-  const clerkUserId = customData.clerk_user_id;
+  const authUserId = customData.auth_user_id;
   const planFromCustom = customData.plan;
   const planFromVariant = getPlanForVariant(variantId(payload));
   const plan = planFromVariant || (planFromCustom === 'team' ? 'team' : planFromCustom === 'pro' ? 'pro' : null);
@@ -60,8 +60,8 @@ export async function POST(req: NextRequest) {
     })
     .onConflictDoNothing();
 
-  if (!clerkUserId || !plan) {
-    return NextResponse.json({ ok: true, ignored: 'missing clerk user or plan' });
+  if (!authUserId || !plan) {
+    return NextResponse.json({ ok: true, ignored: 'missing auth user or plan' });
   }
 
   const status = subscriptionStatus(payload);
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
       generationsLimit: planConfig?.generationsLimit || 3,
       updatedAt: new Date(),
     })
-    .where(eq(users.clerkId, clerkUserId));
+    .where(eq(users.authUserId, authUserId));
 
   return NextResponse.json({ ok: true });
 }

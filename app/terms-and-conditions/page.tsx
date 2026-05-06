@@ -24,7 +24,7 @@ export default function TermsAndConditionsPage() {
         {
           title: "3. Accounts and Authentication",
           body: [
-            "Authentication is provided through Clerk. You are responsible for maintaining the confidentiality of your account and for all activity under your account.",
+            "Authentication is provided through Auth.js with Google OAuth. You are responsible for maintaining the confidentiality of your Google account and for all activity under your account.",
             "You must provide accurate account information and may not use the service to impersonate another person or entity.",
           ],
         },

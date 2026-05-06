@@ -1,6 +1,6 @@
 "use client"
 
-import { SignInButton, useUser } from "@clerk/nextjs"
+import { signIn, useSession } from "next-auth/react"
 import { useState, useEffect, useRef } from "react"
 import { GenerationResult } from "./generation-result"
 
@@ -16,7 +16,9 @@ const STATUS_STEPS = [
 const QUICK_TRIES = ["stripe.com", "linear.app", "vercel.com", "apple.com"]
 
 export function HeroSection() {
-  const { isLoaded, isSignedIn } = useUser()
+  const { data: session, status } = useSession()
+  const isLoaded = status !== "loading"
+  const isSignedIn = Boolean(session?.user)
   const [url, setUrl] = useState("")
   const [loading, setLoading] = useState(false)
   const [statusIndex, setStatusIndex] = useState(0)
@@ -197,11 +199,12 @@ export function HeroSection() {
             </button>
           </div>
           {!isSignedIn && (
-            <SignInButton mode="modal">
-              <button className="mb-4 text-xs text-accent hover:underline font-mono">
-                Sign in to unlock the generator
-              </button>
-            </SignInButton>
+            <button
+              onClick={() => signIn("google")}
+              className="mb-4 text-xs text-accent hover:underline font-mono"
+            >
+              Sign in with Google to unlock the generator
+            </button>
           )}
 
           {/* Quick tries */}

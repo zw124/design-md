@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
-import { getOrCreateCurrentUser } from '@/lib/auth';
+import { auth } from '@/auth';
+import { getOrCreateSessionUser } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { generations } from '@/lib/db/schema';
 
@@ -660,15 +660,15 @@ function sseEvent(event: string, payload: unknown) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const session = await auth();
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
     }
 
-    const appUser = await getOrCreateCurrentUser();
+    const appUser = await getOrCreateSessionUser(session);
     if (!appUser) {
       return NextResponse.json(
         { error: 'Authentication required' },

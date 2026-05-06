@@ -1,6 +1,6 @@
-import { auth } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 import { NextRequest, NextResponse } from 'next/server';
-import { getOrCreateCurrentUser } from '@/lib/auth';
+import { getOrCreateSessionUser } from '@/lib/auth';
 import { PLAN_CONFIG, type BillingPlan } from '@/lib/plans';
 
 export const runtime = 'nodejs';
@@ -22,12 +22,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { userId } = await auth();
-  if (!userId) {
+  const session = await auth();
+  if (!session?.user?.email) {
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
   }
 
-  const appUser = await getOrCreateCurrentUser();
+  const appUser = await getOrCreateSessionUser(session);
   if (!appUser) {
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
   }
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
           checkout_data: {
             email: appUser.email,
             custom: {
-              clerk_user_id: appUser.clerkId,
+              auth_user_id: appUser.authUserId,
               app_user_id: String(appUser.id),
               plan,
             },

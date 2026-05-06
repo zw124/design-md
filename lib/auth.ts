@@ -1,29 +1,20 @@
-import { currentUser } from '@clerk/nextjs/server';
-import { eq } from 'drizzle-orm';
-import { assertDatabaseConfigured, db } from '@/lib/db';
-import { users } from '@/lib/db/schema';
+import type { Session } from "next-auth"
+import { eq } from "drizzle-orm"
+import { assertDatabaseConfigured, db } from "@/lib/db"
+import { users } from "@/lib/db/schema"
 
-export async function getOrCreateCurrentUser() {
-  assertDatabaseConfigured();
-  const clerkUser = await currentUser();
-  if (!clerkUser) return null;
+export async function getOrCreateSessionUser(session: Session | null) {
+  assertDatabaseConfigured()
 
-  const email = clerkUser.primaryEmailAddress?.emailAddress || clerkUser.emailAddresses[0]?.emailAddress;
-  if (!email) {
-    throw new Error('Signed-in Clerk user does not have an email address.');
-  }
+  const email = session?.user?.email
+  if (!email) return null
+
+  const authUserId = email.toLowerCase()
+  const name = session.user?.name || null
 
   const existing = await db.query.users.findFirst({
-    columns: {
-      id: true,
-      clerkId: true,
-      email: true,
-      name: true,
-    },
-    where: eq(users.clerkId, clerkUser.id),
-  });
-
-  const name = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ') || clerkUser.username || null;
+    where: eq(users.authUserId, authUserId),
+  })
 
   if (existing) {
     const [updated] = await db
@@ -34,18 +25,21 @@ export async function getOrCreateCurrentUser() {
         updatedAt: new Date(),
       })
       .where(eq(users.id, existing.id))
-      .returning();
-    return updated;
+      .returning()
+    return updated
   }
 
   const [created] = await db
     .insert(users)
     .values({
-      clerkId: clerkUser.id,
+      authUserId,
       email,
       name,
+      subscriptionTier: "free",
+      subscriptionStatus: "inactive",
+      generationsLimit: 3,
     })
-    .returning();
+    .returning()
 
-  return created;
+  return created
 }

@@ -21,7 +21,7 @@ The app combines deterministic Markdown generation with AI-written site guidance
 - React 19
 - Tailwind CSS 4
 - OpenAI-compatible chat completions API
-- Clerk authentication
+- Auth.js authentication with Google OAuth
 - Lemon Squeezy checkout and webhooks are scaffolded but currently disabled
 - Neon Postgres with Drizzle ORM
 - Microlink screenshot and palette API
@@ -31,7 +31,7 @@ The app combines deterministic Markdown generation with AI-written site guidance
 - Node.js 20+
 - pnpm
 - An OpenAI-compatible API key
-- Clerk application keys
+- Google OAuth credentials for Auth.js
 - Neon Postgres database URL
 - Lemon Squeezy keys are optional while billing is disabled
 
@@ -46,8 +46,10 @@ OPENAI_MODEL=gpt-4o
 
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_clerk_publishable_key
-CLERK_SECRET_KEY=sk_test_your_clerk_secret_key
+# Generate with: npx auth secret
+AUTH_SECRET=your_auth_secret
+AUTH_GOOGLE_ID=your_google_oauth_client_id
+AUTH_GOOGLE_SECRET=your_google_oauth_client_secret
 
 DATABASE_URL=postgresql://user:password@host/database?sslmode=require
 
@@ -97,7 +99,7 @@ pnpm run start
 ## How Generation Works
 
 1. The client sends `POST /api/generate` with `{ "prompt": "https://example.com" }`.
-2. Clerk verifies the signed-in user.
+2. Auth.js verifies the signed-in Google user session.
 3. The server fetches page HTML and stylesheets.
 4. The server extracts verified colors from CSS variables, inline styles, theme color, Tailwind classes, logo palette, and screenshot palette.
 5. The server asks the AI for compact JSON design guidance only.
@@ -121,7 +123,7 @@ pnpm run start
 
 ## Billing Flow
 
-- Clerk handles sign-in and user identity.
+- Auth.js handles Google sign-in and user identity.
 - Lemon Squeezy code is scaffolded for future use.
 - Payment entry points are currently hidden from the UI.
 - `/api/billing/checkout` intentionally returns `503` while billing is paused.

@@ -10,15 +10,15 @@ export default function PrivacyPolicyPage() {
         {
           title: "1. Information We Collect",
           body: [
-            "We collect account information provided through Clerk, such as your user identifier, email address, and basic profile details.",
+            "We collect account information provided through Auth.js and Google OAuth, such as your user identifier, email address, and basic profile details.",
             "We collect submitted URLs, generated Markdown output, extracted color data, billing status, and service usage metadata needed to operate the product.",
           ],
         },
         {
           title: "2. Authentication",
           body: [
-            "Authentication is handled by Clerk. Clerk may process login credentials, session data, device information, and security information according to its own privacy practices.",
-            "DESIGN.MD stores the Clerk user identifier so generated documents and subscription status can be associated with your account.",
+            "Authentication is handled by Auth.js with Google OAuth. Google may process login credentials, session data, device information, and security information according to its own privacy practices.",
+            "DESIGN.MD stores an Auth.js account identifier so generated documents and subscription status can be associated with your account.",
           ],
         },
         {

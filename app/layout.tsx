@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
-import { ClerkProvider } from '@clerk/nextjs'
 import { Fraunces, DM_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { SessionProvider } from '@/components/session-provider'
 import './globals.css'
 
 const fraunces = Fraunces({
@@ -40,13 +40,13 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="en" className={`${fraunces.variable} ${dmMono.variable} bg-background`}>
-        <body className="font-sans antialiased">
+    <html lang="en" className={`${fraunces.variable} ${dmMono.variable} bg-background`}>
+      <body className="font-sans antialiased">
+        <SessionProvider>
           {children}
           {process.env.NODE_ENV === 'production' && <Analytics />}
-        </body>
-      </html>
-    </ClerkProvider>
+        </SessionProvider>
+      </body>
+    </html>
   )
 }

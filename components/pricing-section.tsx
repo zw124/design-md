@@ -1,7 +1,7 @@
 "use client"
 
-import { SignInButton, useUser } from "@clerk/nextjs"
 import { Check, Loader2 } from "lucide-react"
+import { signIn, useSession } from "next-auth/react"
 import { useState } from "react"
 
 const PLANS = [
@@ -36,7 +36,8 @@ const PLANS = [
 ] as const
 
 export function PricingSection() {
-  const { isSignedIn } = useUser()
+  const { data: session } = useSession()
+  const isSignedIn = Boolean(session?.user)
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
 
   const startCheckout = async (plan: "pro" | "team") => {
@@ -63,7 +64,7 @@ export function PricingSection() {
           Plans for real usage
         </h2>
         <p className="text-muted font-mono text-sm max-w-xl mx-auto">
-          Subscribe through Lemon Squeezy. Auth is handled by Clerk and plan state is stored in Neon.
+          Subscribe through Lemon Squeezy. Auth is handled by Auth.js and plan state is stored in Neon.
         </p>
       </div>
 
@@ -111,11 +112,12 @@ export function PricingSection() {
                 )}
               </button>
             ) : (
-              <SignInButton mode="modal">
-                <button className="w-full py-2.5 text-sm font-medium rounded text-center transition-all duration-150 hover:scale-[1.02] bg-accent text-[#0A0A08] hover:bg-accent-muted">
-                  Sign in to subscribe
-                </button>
-              </SignInButton>
+              <button
+                onClick={() => signIn("google")}
+                className="w-full py-2.5 text-sm font-medium rounded text-center transition-all duration-150 hover:scale-[1.02] bg-accent text-[#0A0A08] hover:bg-accent-muted"
+              >
+                Sign in with Google to subscribe
+              </button>
             )}
           </div>
         ))}

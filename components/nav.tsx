@@ -1,12 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { SignInButton, UserButton, useUser } from "@clerk/nextjs"
+import { signIn, signOut, useSession } from "next-auth/react"
 import Link from "next/link"
 
 export function Nav() {
   const [scrolled, setScrolled] = useState(false)
-  const { isLoaded, isSignedIn } = useUser()
+  const { data: session, status } = useSession()
+  const isLoaded = status !== "loading"
+  const isSignedIn = Boolean(session?.user)
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 10)
@@ -43,14 +45,33 @@ export function Nav() {
             Generator
           </Link>
           {isLoaded && !isSignedIn && (
-            <SignInButton mode="modal">
-              <button className="px-4 py-1.5 text-sm font-medium bg-accent text-[#0A0A08] rounded hover:bg-accent-muted transition-all duration-150 hover:scale-[1.02]">
-                Sign in
-              </button>
-            </SignInButton>
+            <button
+              onClick={() => signIn("google")}
+              className="px-4 py-1.5 text-sm font-medium bg-accent text-[#0A0A08] rounded hover:bg-accent-muted transition-all duration-150 hover:scale-[1.02]"
+            >
+              Sign in with Google
+            </button>
           )}
           {isLoaded && isSignedIn && (
-            <UserButton />
+            <button
+              onClick={() => signOut()}
+              className="flex items-center gap-2 rounded border border-border px-2 py-1 text-left hover:border-[#444442]"
+            >
+              {session?.user?.image ? (
+                <img
+                  src={session.user.image}
+                  alt={session.user.name || "User"}
+                  className="size-6 rounded-full"
+                />
+              ) : (
+                <span className="size-6 rounded-full bg-accent text-[#0A0A08] grid place-items-center text-xs font-bold">
+                  {(session?.user?.name || session?.user?.email || "U").slice(0, 1)}
+                </span>
+              )}
+              <span className="hidden max-w-32 truncate text-xs text-foreground md:inline">
+                {session?.user?.name || session?.user?.email}
+              </span>
+            </button>
           )}
         </div>
       </nav>
