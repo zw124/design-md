@@ -1,10 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { SignInButton, UserButton, useUser } from "@clerk/nextjs"
 import Link from "next/link"
 
 export function Nav() {
   const [scrolled, setScrolled] = useState(false)
+  const { isLoaded, isSignedIn } = useUser()
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 10)
@@ -35,19 +37,21 @@ export function Nav() {
             Features
           </Link>
           <Link
-            href="#generator"
+            href="#pricing"
             className="px-3 py-1.5 text-sm text-muted hover:text-foreground transition-colors"
           >
-            Generator
+            Pricing
           </Link>
-          <a
-            href="https://github.com"
-            target="_blank"
-            rel="noreferrer"
-            className="px-4 py-1.5 text-sm font-medium bg-accent text-[#0A0A08] rounded hover:bg-accent-muted transition-all duration-150 hover:scale-[1.02]"
-          >
-            GitHub
-          </a>
+          {isLoaded && !isSignedIn && (
+            <SignInButton mode="modal">
+              <button className="px-4 py-1.5 text-sm font-medium bg-accent text-[#0A0A08] rounded hover:bg-accent-muted transition-all duration-150 hover:scale-[1.02]">
+                Sign in
+              </button>
+            </SignInButton>
+          )}
+          {isLoaded && isSignedIn && (
+            <UserButton />
+          )}
         </div>
       </nav>
     </header>

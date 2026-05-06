@@ -1,4 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import { getOrCreateCurrentUser } from '@/lib/auth';
+import { db } from '@/lib/db';
+import { generations } from '@/lib/db/schema';
 
 export const runtime = 'nodejs';
 
@@ -656,6 +660,22 @@ function sseEvent(event: string, payload: unknown) {
 
 export async function POST(req: NextRequest) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const appUser = await getOrCreateCurrentUser();
+    if (!appUser) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const { prompt } = await req.json();
 
     if (!prompt) {
@@ -883,6 +903,19 @@ export async function POST(req: NextRequest) {
             description: descriptionValue,
             colors: extracted.actualColors,
             insights,
+          });
+          await db.insert(generations).values({
+            userId: appUser.id,
+            url: targetUrl,
+            markdown,
+            colors: extracted.actualColors.map((color) => ({
+              hex: color.hex,
+              source: color.source,
+              role: color.role,
+              confidence: color.confidence,
+            })),
+            aiStatus: insights.aiStatus,
+            aiModel: insights.aiModel,
           });
           controller.enqueue(encoder.encode(sseEvent('markdown', { content: markdown })));
 

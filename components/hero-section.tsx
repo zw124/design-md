@@ -1,5 +1,6 @@
 "use client"
 
+import { SignInButton, useUser } from "@clerk/nextjs"
 import { useState, useEffect, useRef } from "react"
 import { GenerationResult } from "./generation-result"
 
@@ -15,6 +16,7 @@ const STATUS_STEPS = [
 const QUICK_TRIES = ["stripe.com", "linear.app", "vercel.com", "apple.com"]
 
 export function HeroSection() {
+  const { isLoaded, isSignedIn } = useUser()
   const [url, setUrl] = useState("")
   const [loading, setLoading] = useState(false)
   const [statusIndex, setStatusIndex] = useState(0)
@@ -29,6 +31,7 @@ export function HeroSection() {
   const handleGenerate = async (targetUrl?: string) => {
     const urlToUse = targetUrl ?? url
     if (!urlToUse.trim()) return
+    if (!isSignedIn) return
     if (targetUrl) setUrl(targetUrl)
 
     if (generationAbort.current) {
@@ -187,12 +190,19 @@ export function HeroSection() {
             />
             <button
               onClick={() => handleGenerate()}
-              disabled={loading}
+              disabled={loading || !isLoaded || !isSignedIn}
               className="px-5 py-2.5 text-sm font-medium bg-accent text-[#0A0A08] rounded hover:bg-accent-muted transition-all duration-150 hover:scale-[1.02] disabled:opacity-50 disabled:scale-100 whitespace-nowrap"
             >
-              {loading ? "Generating..." : "Generate →"}
+              {loading ? "Generating..." : isSignedIn ? "Generate →" : "Sign in to generate"}
             </button>
           </div>
+          {!isSignedIn && (
+            <SignInButton mode="modal">
+              <button className="mb-4 text-xs text-accent hover:underline font-mono">
+                Sign in to unlock the generator
+              </button>
+            </SignInButton>
+          )}
 
           {/* Quick tries */}
           <div className="flex items-center justify-center gap-2 flex-wrap">
@@ -201,6 +211,7 @@ export function HeroSection() {
               <button
                 key={site}
                 onClick={() => handleGenerate(site)}
+                disabled={!isSignedIn}
                 className="text-xs px-2.5 py-1 rounded border border-border text-muted hover:text-foreground hover:border-[#444442] transition-all"
               >
                 {site}

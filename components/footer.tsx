@@ -15,8 +15,8 @@ export function Footer() {
           <Link href="#features" className="text-xs text-muted hover:text-foreground transition-colors font-mono">
             Features
           </Link>
-          <Link href="#generator" className="text-xs text-muted hover:text-foreground transition-colors font-mono">
-            Generator
+          <Link href="#pricing" className="text-xs text-muted hover:text-foreground transition-colors font-mono">
+            Pricing
           </Link>
           <Link href="/" className="text-xs text-muted hover:text-foreground transition-colors font-mono">
             Home
