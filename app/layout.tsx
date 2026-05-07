@@ -23,6 +23,9 @@ export const metadata: Metadata = {
     'Paste a URL — get a production-ready DESIGN.md with tokens, typography, spacing, and component patterns. Everything your team needs, in seconds.',
   generator: 'v0.app',
   keywords: ['design system', 'design tokens', 'DESIGN.md', 'CSS variables', 'Tailwind', 'design documentation'],
+  verification: {
+    google: 'fYvmsQ1jO6zT-oEDi0qGy0VJH4uR3IXWMMEjsXhHX4k',
+  },
   openGraph: {
     title: 'DESIGN.MD - Design System Generator',
     description: 'Turn any site into a production-ready design system document.',
