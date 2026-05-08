@@ -18,11 +18,11 @@ const QUICK_TRIES = ["stripe.com", "linear.app", "vercel.com", "apple.com"]
 const FREE_GENERATION_LIMIT = 3
 const USAGE_STORAGE_KEY = "designmd:generation-count"
 const TRUST_WORDMARKS = [
-  { id: "openai", label: "OpenAI", type: "text" },
+  { id: "openai", label: "OpenAI", type: "openai" },
   { id: "anthropic", label: "ANTHROPIC", type: "anthropic" },
   { id: "gemini", label: "Gemini", type: "gemini" },
   { id: "windsurf", label: "Windsurf", type: "windsurf" },
-  { id: "cursor", label: "Cursor", type: "text" },
+  { id: "cursor", label: "Cursor", type: "cursor" },
 ]
 
 function TrustWordmark({ type, label }: { type: string; label: string }) {
@@ -36,15 +36,28 @@ function TrustWordmark({ type, label }: { type: string; label: string }) {
     )
   }
 
+  if (type === "cursor") {
+    return (
+      <span className="inline-flex items-center gap-3 text-[#F0EDE4]">
+        <img
+          src="https://cursor.com/marketing-static/favicon.svg"
+          alt="Cursor"
+          className="h-5 w-5"
+        />
+        <span className="text-[1.25rem] font-medium tracking-[-0.02em]">Cursor</span>
+      </span>
+    )
+  }
+
   if (type === "gemini") {
     return (
       <span className="inline-flex items-center gap-2 text-[#F0EDE4]">
         <img
           src="https://www.gstatic.com/lamda/images/gemini_sparkle_aurora_33f86dc0c0257da337c63.svg"
           alt="Gemini"
-          className="h-4 w-4"
+          className="h-5 w-5"
         />
-        <span className="text-[1rem] font-medium tracking-[-0.01em]">Gemini</span>
+        <span className="text-[1.25rem] font-medium tracking-[-0.01em]">Gemini</span>
       </span>
     )
   }
@@ -52,7 +65,7 @@ function TrustWordmark({ type, label }: { type: string; label: string }) {
   if (type === "anthropic") {
     return (
       <span
-        className="text-[0.98rem] tracking-[0.16em] text-[#F0EDE4]"
+        className="text-[1.12rem] tracking-[0.16em] text-[#F0EDE4]"
         style={{ fontFamily: "Anthropic Sans, Helvetica Neue, Arial, sans-serif", fontWeight: 500 }}
       >
         {label}
@@ -62,14 +75,21 @@ function TrustWordmark({ type, label }: { type: string; label: string }) {
 
   if (type === "openai") {
     return (
-      <span className="text-[1rem] font-medium tracking-[-0.02em] text-[#F0EDE4]">
-        {label}
+      <span className="inline-flex items-center gap-3 text-[#F0EDE4]">
+        <img
+          src="https://www.google.com/s2/favicons?domain=openai.com&sz=128"
+          alt="OpenAI"
+          className="h-5 w-5 rounded-[4px]"
+        />
+        <span className="text-[1.25rem] font-medium tracking-[-0.02em]">
+          {label}
+        </span>
       </span>
     )
   }
 
   return (
-    <span className="text-[1rem] font-medium tracking-[-0.02em] text-[#F0EDE4]">
+    <span className="text-[1.25rem] font-medium tracking-[-0.02em] text-[#F0EDE4]">
       {label}
     </span>
   )
@@ -255,22 +275,6 @@ export function HeroSection() {
           Paste a URL and get a clean DESIGN.md with AI analysis, verified colors, typography guidance, layout rules, and component specs.
         </p>
 
-        <div className="animate-fade-up-4 mb-10 overflow-hidden">
-          <div className="pointer-events-none absolute left-0 z-10 h-8 w-20 bg-gradient-to-r from-[#0A0A08] to-transparent" />
-          <div className="pointer-events-none absolute right-0 z-10 h-8 w-20 bg-gradient-to-l from-[#0A0A08] to-transparent" />
-          <motion.div
-            animate={{ x: ["0%", "-50%"] }}
-            transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
-            className="flex w-max items-center gap-10"
-          >
-            {[...TRUST_WORDMARKS, ...TRUST_WORDMARKS].map((item, index) => (
-              <div key={`${item.id}-${index}`} className="flex min-w-fit items-center justify-center">
-                <TrustWordmark type={item.type} label={item.label} />
-              </div>
-            ))}
-          </motion.div>
-        </div>
-
         {/* Input bar */}
         <div className="animate-fade-up-4">
           <div className="flex gap-2 p-1.5 rounded-lg border border-border bg-surface max-w-2xl mx-auto mb-4">
@@ -316,6 +320,35 @@ export function HeroSection() {
                 {site}
               </button>
             ))}
+          </div>
+        </div>
+
+        <div className="animate-fade-up-4 relative mt-10 overflow-hidden py-3">
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-[#0A0A08] via-[#0A0A08] to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-[#0A0A08] via-[#0A0A08] to-transparent" />
+          <div className="relative h-10 overflow-hidden">
+            <motion.div
+              animate={{ x: ["0%", "-100%"] }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              className="absolute left-0 top-0 flex min-w-max items-center gap-14 whitespace-nowrap"
+            >
+              {TRUST_WORDMARKS.map((item) => (
+                <div key={`a-${item.id}`} className="flex min-w-fit items-center justify-center">
+                  <TrustWordmark type={item.type} label={item.label} />
+                </div>
+              ))}
+            </motion.div>
+            <motion.div
+              animate={{ x: ["100%", "0%"] }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              className="absolute left-0 top-0 flex min-w-max items-center gap-14 whitespace-nowrap"
+            >
+              {TRUST_WORDMARKS.map((item) => (
+                <div key={`b-${item.id}`} className="flex min-w-fit items-center justify-center">
+                  <TrustWordmark type={item.type} label={item.label} />
+                </div>
+              ))}
+            </motion.div>
           </div>
         </div>
 
