@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { signOut, useSession } from "next-auth/react"
+import { signIn, signOut, useSession } from "next-auth/react"
 import Link from "next/link"
 
 export function Nav() {
@@ -47,12 +47,14 @@ export function Nav() {
           >
             Generator
           </Link>
-          <Link
-            href="/admin"
-            className="px-3 py-1.5 text-sm text-muted hover:text-foreground transition-colors"
-          >
-            Login
-          </Link>
+          {isLoaded && !isSignedIn && (
+            <button
+              onClick={() => signIn("google")}
+              className="rounded border border-border px-3 py-1.5 text-sm text-muted transition-colors hover:text-foreground hover:border-[#444442]"
+            >
+              Google Login
+            </button>
+          )}
           {isLoaded && isSignedIn && (
             <button
               onClick={() => signOut()}

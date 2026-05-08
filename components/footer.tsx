@@ -21,6 +21,9 @@ export function Footer() {
           <Link href="/#generator" className="text-xs text-muted hover:text-foreground transition-colors font-mono">
             Generator
           </Link>
+          <Link href="/admin" className="text-xs text-muted hover:text-foreground transition-colors font-mono">
+            Admin Login
+          </Link>
         </div>
       </div>
     </footer>
