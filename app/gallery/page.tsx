@@ -1,71 +1,36 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ArrowLeft, Download, ExternalLink, Globe2, Layers2 } from "lucide-react"
 import { Nav } from "@/components/nav"
 import { Footer } from "@/components/footer"
+import {
+  DEFAULT_GALLERY_ITEMS,
+  GALLERY_STORAGE_KEY,
+  type GalleryItem,
+  screenshotUrl,
+} from "@/lib/gallery-data"
 
-type GalleryItem = {
-  name: string
-  description: string
-  url: string
-  href: string
-  pageTypes: string[]
-  uxPatterns: string[]
-  uiElements: string[]
-  colors: { name: string; value: string }[]
+function loadGalleryItems() {
+  if (typeof window === "undefined") return DEFAULT_GALLERY_ITEMS
+  try {
+    const stored = localStorage.getItem(GALLERY_STORAGE_KEY)
+    if (!stored) return DEFAULT_GALLERY_ITEMS
+    const custom = JSON.parse(stored) as GalleryItem[]
+    return [...custom, ...DEFAULT_GALLERY_ITEMS]
+  } catch {
+    return DEFAULT_GALLERY_ITEMS
+  }
 }
 
-const GALLERY_ITEMS: GalleryItem[] = [
-  {
-    name: "Stripe",
-    description: "Payments infrastructure and dashboard design patterns",
-    url: "stripe.com",
-    href: "https://stripe.com",
-    pageTypes: ["Product Page & Landing", "Dashboard"],
-    uxPatterns: ["Product Features", "Pricing", "Social Proof"],
-    uiElements: ["Cards & Tiles", "Button", "Navigation Bar", "Accordion & Collapse", "Footer", "Icon"],
-    colors: [
-      { name: "Purple", value: "#635BFF" },
-      { name: "Navy", value: "#0A2540" },
-      { name: "Cloud", value: "#F6F9FC" },
-      { name: "Slate", value: "#425466" },
-    ],
-  },
-  {
-    name: "Linear",
-    description: "Issue tracking, product planning, and command-first UI",
-    url: "linear.app",
-    href: "https://linear.app",
-    pageTypes: ["Product Page & Landing", "Product Details"],
-    uxPatterns: ["Feature Comparison", "Product Features", "Testimonials"],
-    uiElements: ["Cards & Tiles", "Button", "Carousel", "Navigation Bar", "Animation", "Icon"],
-    colors: [
-      { name: "Indigo", value: "#5E6AD2" },
-      { name: "Black", value: "#08090A" },
-      { name: "Mist", value: "#F7F8FA" },
-      { name: "Gray", value: "#8A8F98" },
-    ],
-  },
-  {
-    name: "Apple",
-    description: "Consumer product storytelling and minimal commerce layout",
-    url: "apple.com",
-    href: "https://apple.com",
-    pageTypes: ["Home Page", "Product Page & Landing"],
-    uxPatterns: ["Hero Campaign", "Product Features", "Navigation"],
-    uiElements: ["Navigation Bar", "Button", "Cards & Tiles", "Carousel", "Icon", "Footer"],
-    colors: [
-      { name: "Black", value: "#000000" },
-      { name: "Blue", value: "#0071E3" },
-      { name: "Cotton", value: "#F5F5F7" },
-      { name: "Gray", value: "#6E6E73" },
-    ],
-  },
-]
-
-function screenshotUrl(href: string) {
-  return `https://api.microlink.io/?url=${encodeURIComponent(href)}&screenshot=true&meta=false&embed=screenshot.url`
+function downloadMarkdown(item: GalleryItem) {
+  const blob = new Blob([item.markdown || `# DESIGN.md - ${item.name}\n`], { type: "text/markdown;charset=utf-8" })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement("a")
+  anchor.href = url
+  anchor.download = `${item.url.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "design"}.design.md`
+  anchor.click()
+  URL.revokeObjectURL(url)
 }
 
 function Chip({ children }: { children: React.ReactNode }) {
@@ -79,17 +44,22 @@ function Chip({ children }: { children: React.ReactNode }) {
 function PanelSection({
   title,
   icon,
+  action,
   children,
 }: {
   title: string
   icon: React.ReactNode
+  action?: React.ReactNode
   children: React.ReactNode
 }) {
   return (
     <section className="space-y-4">
-      <div className="flex items-center gap-3">
-        <span className="grid h-7 w-7 place-items-center rounded bg-[#151513]">{icon}</span>
-        <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <span className="grid h-7 w-7 place-items-center rounded bg-[#151513]">{icon}</span>
+          <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+        </div>
+        {action}
       </div>
       <div className="flex flex-wrap gap-2.5">{children}</div>
     </section>
@@ -160,16 +130,25 @@ function DetailView({ item, onBack }: { item: GalleryItem; onBack: () => void })
               ))}
             </PanelSection>
 
-            <PanelSection title="Colors" icon={<span className="text-lg">◒</span>}>
+            <PanelSection
+              title="Colors"
+              icon={<span className="text-lg">◒</span>}
+              action={
+                <button
+                  onClick={() => downloadMarkdown(item)}
+                  className="inline-flex items-center gap-2 rounded-full bg-[#202026] px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-[#27272f]"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Download
+                </button>
+              }
+            >
               {item.colors.map((color) => (
                 <span
-                  key={color.name}
+                  key={`${color.name}-${color.value}`}
                   className="inline-flex items-center gap-3 rounded-lg border border-border bg-[#0d0d0b] px-4 py-2.5 text-sm text-foreground"
                 >
-                  <span
-                    className="h-4 w-4 rounded-full"
-                    style={{ backgroundColor: color.value }}
-                  />
+                  <span className="h-4 w-4 rounded-full" style={{ backgroundColor: color.value }} />
                   {color.name}
                 </span>
               ))}
@@ -177,16 +156,29 @@ function DetailView({ item, onBack }: { item: GalleryItem; onBack: () => void })
           </div>
 
           <div className="mt-10 grid grid-cols-[1fr_auto_auto] gap-3">
-            <button className="inline-flex h-14 items-center justify-center gap-3 rounded-full bg-[#202026] px-5 text-sm font-semibold text-foreground transition hover:bg-[#27272f]">
+            <button
+              onClick={() => downloadMarkdown(item)}
+              className="inline-flex h-14 items-center justify-center gap-3 rounded-full bg-[#202026] px-5 text-sm font-semibold text-foreground transition hover:bg-[#27272f]"
+            >
               <Download className="h-4 w-4" />
               Download
             </button>
-            <button className="grid h-14 w-14 place-items-center rounded-full bg-[#202026] text-foreground transition hover:bg-[#27272f]">
+            <a
+              href={item.href}
+              target="_blank"
+              rel="noreferrer"
+              className="grid h-14 w-14 place-items-center rounded-full bg-[#202026] text-foreground transition hover:bg-[#27272f]"
+            >
               <ExternalLink className="h-4 w-4" />
-            </button>
-            <button className="grid h-14 w-14 place-items-center rounded-full bg-[#202026] text-foreground transition hover:bg-[#27272f]">
+            </a>
+            <a
+              href={item.href}
+              target="_blank"
+              rel="noreferrer"
+              className="grid h-14 w-14 place-items-center rounded-full bg-[#202026] text-foreground transition hover:bg-[#27272f]"
+            >
               <Globe2 className="h-4 w-4" />
-            </button>
+            </a>
           </div>
         </aside>
       </div>
@@ -195,7 +187,12 @@ function DetailView({ item, onBack }: { item: GalleryItem; onBack: () => void })
 }
 
 export default function GalleryPage() {
+  const [items, setItems] = useState(DEFAULT_GALLERY_ITEMS)
   const [selected, setSelected] = useState<GalleryItem | null>(null)
+
+  useEffect(() => {
+    setItems(loadGalleryItems())
+  }, [])
 
   return (
     <main className="min-h-screen">
@@ -218,9 +215,9 @@ export default function GalleryPage() {
             </div>
 
             <div className="grid gap-6 md:grid-cols-3">
-              {GALLERY_ITEMS.map((item) => (
+              {items.map((item) => (
                 <button
-                  key={item.url}
+                  key={item.id}
                   onClick={() => setSelected(item)}
                   className="group overflow-hidden rounded-lg border border-border bg-surface text-left transition duration-200 hover:-translate-y-0.5 hover:border-[#3a3a36] hover:bg-[#151513]"
                 >

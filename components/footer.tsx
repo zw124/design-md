@@ -15,17 +15,11 @@ export function Footer() {
           © 2026 DESIGN.MD by Parallect — Built for people who care about design systems
         </p>
         <div className="flex flex-wrap items-center justify-center gap-5">
-          <Link href="#generator" className="text-xs text-muted hover:text-foreground transition-colors font-mono">
+          <Link href="/gallery" className="text-xs text-muted hover:text-foreground transition-colors font-mono">
+            Gallery
+          </Link>
+          <Link href="/#generator" className="text-xs text-muted hover:text-foreground transition-colors font-mono">
             Generator
-          </Link>
-          <Link href="/terms-and-conditions" className="text-xs text-muted hover:text-foreground transition-colors font-mono">
-            Terms
-          </Link>
-          <Link href="/privacy-policy" className="text-xs text-muted hover:text-foreground transition-colors font-mono">
-            Privacy
-          </Link>
-          <Link href="/refund-policy" className="text-xs text-muted hover:text-foreground transition-colors font-mono">
-            Refunds
           </Link>
         </div>
       </div>
