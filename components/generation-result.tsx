@@ -410,7 +410,7 @@ export function GenerationResult({ url, content, isGenerating, onClose, colorPay
         </div>
 
         {/* Right Panel (45%) */}
-        <div className="w-full md:w-[45%] flex flex-col bg-[#0A0A08] animate-in slide-in-from-right-4 duration-300 md:h-full">
+        <div className="w-full md:w-[45%] min-h-0 flex flex-col bg-[#0A0A08] animate-in slide-in-from-right-4 duration-300 md:h-full">
           
           {/* Top Right: Website Screenshot */}
           <div className="h-[55%] min-h-[300px] flex flex-col border-b border-[#222220] p-6 pt-5 shrink-0">
@@ -444,7 +444,7 @@ export function GenerationResult({ url, content, isGenerating, onClose, colorPay
             </div>
           </div>
 
-          <div className="flex-1 md:overflow-y-auto p-6 pt-5 flex flex-col shrink-0 min-h-[340px]">
+          <div className="flex-1 min-h-0 p-6 pt-5 flex flex-col min-h-[340px]">
             <span className="text-[10px] uppercase text-muted tracking-wider mb-2 font-mono">Explore the Result</span>
             <span className="text-[10px] text-muted/70 mb-5 font-mono">Switch between source sites, extracted fonts, and verified colors</span>
 
@@ -482,8 +482,8 @@ export function GenerationResult({ url, content, isGenerating, onClose, colorPay
               </div>
             </LayoutGroup>
 
-            <div className="flex-1 overflow-hidden rounded-[28px] border border-[#222220] bg-surface">
-              <AnimatePresence mode="wait">
+            <div className="flex-1 min-h-0 overflow-y-auto rounded-[28px] border border-[#222220] bg-surface">
+                <AnimatePresence mode="wait">
                 {insightTab === "Sites" && (
                   <motion.div
                     key="sites"
@@ -491,7 +491,7 @@ export function GenerationResult({ url, content, isGenerating, onClose, colorPay
                     animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                     exit={{ opacity: 0, y: -18, filter: "blur(8px)" }}
                     transition={{ duration: 0.32, ease: [0.2, 0, 0, 1] }}
-                    className="flex h-full flex-col gap-4 p-5"
+                    className="flex min-h-full flex-col gap-4 p-5"
                   >
                     {siteCards.map((card, index) => (
                       <motion.a
@@ -529,7 +529,7 @@ export function GenerationResult({ url, content, isGenerating, onClose, colorPay
                     animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                     exit={{ opacity: 0, y: -18, filter: "blur(8px)" }}
                     transition={{ duration: 0.32, ease: [0.2, 0, 0, 1] }}
-                    className="flex h-full flex-col gap-4 p-5"
+                    className="flex min-h-full flex-col gap-4 p-5"
                   >
                     {fontEntries.length === 0 ? (
                       <div className="flex h-full items-center justify-center text-sm text-muted">No font metadata was detected in the generated report yet.</div>
@@ -567,7 +567,7 @@ export function GenerationResult({ url, content, isGenerating, onClose, colorPay
                     animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                     exit={{ opacity: 0, y: -18, filter: "blur(8px)" }}
                     transition={{ duration: 0.32, ease: [0.2, 0, 0, 1] }}
-                    className="flex h-full flex-col gap-6 p-5"
+                    className="flex min-h-full flex-col gap-6 p-5"
                   >
                     {colors.actual.length === 0 ? (
                       <div className="flex h-full items-center justify-center text-sm text-muted">No reliable site colors found.</div>
