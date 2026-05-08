@@ -1,6 +1,7 @@
 "use client"
 
 import { signIn, useSession } from "next-auth/react"
+import { motion } from "framer-motion"
 import { useState, useEffect, useRef } from "react"
 import { GenerationResult } from "./generation-result"
 
@@ -16,6 +17,63 @@ const STATUS_STEPS = [
 const QUICK_TRIES = ["stripe.com", "linear.app", "vercel.com", "apple.com"]
 const FREE_GENERATION_LIMIT = 3
 const USAGE_STORAGE_KEY = "designmd:generation-count"
+const TRUST_WORDMARKS = [
+  { id: "openai", label: "OpenAI", type: "text" },
+  { id: "anthropic", label: "ANTHROPIC", type: "anthropic" },
+  { id: "gemini", label: "Gemini", type: "gemini" },
+  { id: "windsurf", label: "Windsurf", type: "windsurf" },
+  { id: "cursor", label: "Cursor", type: "text" },
+]
+
+function TrustWordmark({ type, label }: { type: string; label: string }) {
+  if (type === "windsurf") {
+    return (
+      <img
+        src="https://exafunction.github.io/public/brand/windsurf-white-wordmark.svg"
+        alt="Windsurf"
+        className="h-5 w-auto opacity-95"
+      />
+    )
+  }
+
+  if (type === "gemini") {
+    return (
+      <span className="inline-flex items-center gap-2 text-[#F0EDE4]">
+        <img
+          src="https://www.gstatic.com/lamda/images/gemini_sparkle_aurora_33f86dc0c0257da337c63.svg"
+          alt="Gemini"
+          className="h-4 w-4"
+        />
+        <span className="text-[1rem] font-medium tracking-[-0.01em]">Gemini</span>
+      </span>
+    )
+  }
+
+  if (type === "anthropic") {
+    return (
+      <span
+        className="text-[0.98rem] tracking-[0.16em] text-[#F0EDE4]"
+        style={{ fontFamily: "Anthropic Sans, Helvetica Neue, Arial, sans-serif", fontWeight: 500 }}
+      >
+        {label}
+      </span>
+    )
+  }
+
+  if (type === "openai") {
+    return (
+      <span className="text-[1rem] font-medium tracking-[-0.02em] text-[#F0EDE4]">
+        {label}
+      </span>
+    )
+  }
+
+  return (
+    <span className="text-[1rem] font-medium tracking-[-0.02em] text-[#F0EDE4]">
+      {label}
+    </span>
+  )
+}
 
 export function HeroSection() {
   const { data: session, status } = useSession()
@@ -196,6 +254,22 @@ export function HeroSection() {
         <p className="animate-fade-up-3 font-mono text-base text-muted leading-relaxed mb-10 max-w-xl mx-auto text-pretty">
           Paste a URL and get a clean DESIGN.md with AI analysis, verified colors, typography guidance, layout rules, and component specs.
         </p>
+
+        <div className="animate-fade-up-4 mb-10 overflow-hidden">
+          <div className="pointer-events-none absolute left-0 z-10 h-8 w-20 bg-gradient-to-r from-[#0A0A08] to-transparent" />
+          <div className="pointer-events-none absolute right-0 z-10 h-8 w-20 bg-gradient-to-l from-[#0A0A08] to-transparent" />
+          <motion.div
+            animate={{ x: ["0%", "-50%"] }}
+            transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
+            className="flex w-max items-center gap-10"
+          >
+            {[...TRUST_WORDMARKS, ...TRUST_WORDMARKS].map((item, index) => (
+              <div key={`${item.id}-${index}`} className="flex min-w-fit items-center justify-center">
+                <TrustWordmark type={item.type} label={item.label} />
+              </div>
+            ))}
+          </motion.div>
+        </div>
 
         {/* Input bar */}
         <div className="animate-fade-up-4">
