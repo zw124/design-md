@@ -5,7 +5,6 @@ import { ArrowLeft, Download, ExternalLink, Globe2, Layers2 } from "lucide-react
 import { Nav } from "@/components/nav"
 import { Footer } from "@/components/footer"
 import {
-  DEFAULT_GALLERY_ITEMS,
   type GalleryItem,
   screenshotUrl,
 } from "@/lib/gallery-data"
@@ -13,11 +12,11 @@ import {
 async function loadGalleryItems() {
   try {
     const response = await fetch("/api/gallery", { cache: "no-store" })
-    if (!response.ok) return DEFAULT_GALLERY_ITEMS
+    if (!response.ok) return []
     const data = (await response.json()) as { items?: GalleryItem[] }
-    return data.items?.length ? data.items : DEFAULT_GALLERY_ITEMS
+    return data.items || []
   } catch {
-    return DEFAULT_GALLERY_ITEMS
+    return []
   }
 }
 
@@ -185,7 +184,7 @@ function DetailView({ item, onBack }: { item: GalleryItem; onBack: () => void })
 }
 
 export default function GalleryPage() {
-  const [items, setItems] = useState(DEFAULT_GALLERY_ITEMS)
+  const [items, setItems] = useState<GalleryItem[]>([])
   const [selected, setSelected] = useState<GalleryItem | null>(null)
 
   useEffect(() => {
@@ -213,27 +212,35 @@ export default function GalleryPage() {
             </div>
 
             <div className="grid gap-6 md:grid-cols-3">
-              {items.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => setSelected(item)}
-                  className="group overflow-hidden rounded-lg border border-border bg-surface text-left transition duration-200 hover:-translate-y-0.5 hover:border-[#3a3a36] hover:bg-[#151513]"
-                >
-                  <div className="aspect-[16/10] overflow-hidden border-b border-border bg-[#080807]">
-                    <img
-                      src={screenshotUrl(item.href)}
-                      alt={`${item.name} website screenshot`}
-                      className="h-full w-full object-cover object-top opacity-95 transition duration-500 group-hover:scale-[1.015] group-hover:opacity-100"
-                    />
-                  </div>
-                  <div className="p-5">
-                    <h2 className="font-display text-2xl font-semibold text-foreground">
-                      {item.name}
-                    </h2>
-                    <p className="mt-1 font-mono text-sm text-muted">{item.url}</p>
-                  </div>
-                </button>
-              ))}
+              {items.length === 0 ? (
+                <div className="rounded-lg border border-border bg-surface p-8 md:col-span-3">
+                  <p className="font-mono text-sm leading-7 text-muted">
+                    No Gallery items yet. Add your first DESIGN.md reference from Admin.
+                  </p>
+                </div>
+              ) : (
+                items.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setSelected(item)}
+                    className="group overflow-hidden rounded-lg border border-border bg-surface text-left transition duration-200 hover:-translate-y-0.5 hover:border-[#3a3a36] hover:bg-[#151513]"
+                  >
+                    <div className="aspect-[16/10] overflow-hidden border-b border-border bg-[#080807]">
+                      <img
+                        src={screenshotUrl(item.href)}
+                        alt={`${item.name} website screenshot`}
+                        className="h-full w-full object-cover object-top opacity-95 transition duration-500 group-hover:scale-[1.015] group-hover:opacity-100"
+                      />
+                    </div>
+                    <div className="p-5">
+                      <h2 className="font-display text-2xl font-semibold text-foreground">
+                        {item.name}
+                      </h2>
+                      <p className="mt-1 font-mono text-sm text-muted">{item.url}</p>
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
           </section>
           <Footer />

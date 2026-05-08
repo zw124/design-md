@@ -1,4 +1,4 @@
-import { DEFAULT_DESIGN_STRUCTURE, DEFAULT_GALLERY_ITEMS, type GalleryItem } from "@/lib/gallery-data"
+import { DEFAULT_DESIGN_STRUCTURE, LEGACY_DEFAULT_GALLERY_IDS, type GalleryItem } from "@/lib/gallery-data"
 import { assertDatabaseConfigured, sql } from "@/lib/db"
 
 type GalleryRow = {
@@ -67,37 +67,11 @@ async function ensureGalleryTables() {
     )
   `
 
-  for (const [index, item] of DEFAULT_GALLERY_ITEMS.entries()) {
+  for (const id of LEGACY_DEFAULT_GALLERY_IDS) {
     await sql`
-      insert into gallery_items (
-        id,
-        name,
-        description,
-        url,
-        href,
-        page_types,
-        ux_patterns,
-        ui_elements,
-        colors,
-        markdown,
-        visible,
-        sort_order
-      )
-      values (
-        ${item.id},
-        ${item.name},
-        ${item.description},
-        ${item.url},
-        ${item.href},
-        ${JSON.stringify(item.pageTypes)}::jsonb,
-        ${JSON.stringify(item.uxPatterns)}::jsonb,
-        ${JSON.stringify(item.uiElements)}::jsonb,
-        ${JSON.stringify(item.colors)}::jsonb,
-        ${item.markdown},
-        true,
-        ${index + 1000}
-      )
-      on conflict (id) do nothing
+      update gallery_items
+      set visible = false, updated_at = now()
+      where id = ${id}
     `
   }
 
@@ -184,17 +158,6 @@ export async function hideGalleryItem(id: string) {
     set visible = false, updated_at = now()
     where id = ${id}
   `
-}
-
-export async function restoreDefaultGalleryItems() {
-  await ensureGalleryTables()
-  for (const item of DEFAULT_GALLERY_ITEMS) {
-    await sql`
-      update gallery_items
-      set visible = true, updated_at = now()
-      where id = ${item.id}
-    `
-  }
 }
 
 export async function getDesignStructure() {

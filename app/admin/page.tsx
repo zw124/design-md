@@ -6,7 +6,6 @@ import { Nav } from "@/components/nav"
 import { Footer } from "@/components/footer"
 import {
   DEFAULT_DESIGN_STRUCTURE,
-  DEFAULT_GALLERY_ITEMS,
   type GalleryColor,
   type GalleryItem,
   normalizeGalleryUrl,
@@ -109,7 +108,7 @@ export default function AdminPage() {
 
       if (galleryResponse.ok) {
         const galleryData = (await galleryResponse.json()) as { items?: GalleryItem[] }
-        setItems(galleryData.items || DEFAULT_GALLERY_ITEMS)
+        setItems(galleryData.items || [])
       }
 
       if (structureResponse.ok) {
@@ -117,7 +116,7 @@ export default function AdminPage() {
         setStructure(structureData.structure || DEFAULT_DESIGN_STRUCTURE)
       }
     } catch {
-      setItems(DEFAULT_GALLERY_ITEMS)
+      setItems([])
       setStructure(DEFAULT_DESIGN_STRUCTURE)
     } finally {
       setLoading(false)
@@ -216,22 +215,6 @@ export default function AdminPage() {
 
   const downloadStructure = () => {
     downloadText("design-md-structure.md", structure)
-  }
-
-  const restoreDefaultItems = async () => {
-    if (!window.confirm("Restore all default Gallery examples?")) return
-    try {
-      const response = await fetch("/api/gallery", {
-        method: "PATCH",
-        headers: adminHeaders(),
-        body: JSON.stringify({ action: "restore-defaults" }),
-      })
-      if (!response.ok) throw new Error("Restore failed")
-      const data = (await response.json()) as { items?: GalleryItem[] }
-      setItems(data.items || [])
-    } catch {
-      alert("Restore failed. Check DATABASE_URL and try again.")
-    }
   }
 
   const deleteItem = async (item: GalleryItem) => {
@@ -489,13 +472,6 @@ export default function AdminPage() {
             <div className="rounded-lg border border-border bg-surface p-4">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Gallery items</p>
-                <button
-                  onClick={restoreDefaultItems}
-                  className="rounded border border-border px-2.5 py-1.5 text-[11px] text-muted transition hover:text-foreground"
-                  type="button"
-                >
-                  Restore defaults
-                </button>
               </div>
               <div className="space-y-3">
                 {items.length === 0 ? (
@@ -506,11 +482,6 @@ export default function AdminPage() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="truncate text-sm font-semibold text-foreground">{item.name}</p>
-                          {DEFAULT_GALLERY_ITEMS.some((defaultItem) => defaultItem.id === item.id) ? (
-                            <span className="rounded bg-[#202026] px-2 py-0.5 text-[10px] uppercase tracking-[0.16em] text-muted">
-                              default
-                            </span>
-                          ) : null}
                         </div>
                         <p className="truncate text-xs text-muted">{item.url}</p>
                       </div>
