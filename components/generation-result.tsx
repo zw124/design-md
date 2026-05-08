@@ -259,6 +259,7 @@ function renderMarkdown(text: string) {
 export function GenerationResult({ url, content, isGenerating, onClose, colorPayload }: GenerationResultProps) {
   const [activeTab, setActiveTab] = useState("Markdown")
   const [insightTab, setInsightTab] = useState<"Sites" | "Fonts" | "Colors">("Sites")
+  const [hoverFocus, setHoverFocus] = useState<"top" | "bottom" | null>(null)
   
   const normalizedUrl = useMemo(() => {
     if (!url) return "https://stripe.com"
@@ -275,6 +276,8 @@ export function GenerationResult({ url, content, isGenerating, onClose, colorPay
   const colors = useMemo(() => buildColorGroups(colorPayload), [colorPayload])
   const fontEntries = useMemo(() => extractFontEntries(visibleOutput), [visibleOutput])
   const siteCards = useMemo(() => buildSiteCards(normalizedUrl, fontEntries), [normalizedUrl, fontEntries])
+  const topPanelHeight = hoverFocus === "top" ? "100%" : hoverFocus === "bottom" ? "18%" : "55%"
+  const bottomPanelHeight = hoverFocus === "bottom" ? "100%" : hoverFocus === "top" ? "18%" : "45%"
 
   const downloadMarkdown = () => {
     const blob = new Blob([visibleOutput], { type: "text/markdown;charset=utf-8" })
@@ -410,10 +413,22 @@ export function GenerationResult({ url, content, isGenerating, onClose, colorPay
         </div>
 
         {/* Right Panel (45%) */}
-        <div className="w-full md:w-[45%] min-h-0 flex flex-col bg-[#0A0A08] animate-in slide-in-from-right-4 duration-300 md:h-full">
+        <div
+          className="w-full md:w-[45%] min-h-0 flex flex-col bg-[#0A0A08] animate-in slide-in-from-right-4 duration-300 md:h-full"
+          onMouseLeave={() => setHoverFocus(null)}
+        >
           
           {/* Top Right: Website Screenshot */}
-          <div className="h-[55%] min-h-[300px] flex flex-col border-b border-[#222220] p-6 pt-5 shrink-0">
+          <motion.div
+            className="min-h-0 shrink-0 overflow-hidden border-b border-[#222220]"
+            onMouseEnter={() => setHoverFocus("top")}
+            animate={{
+              height: topPanelHeight,
+              opacity: hoverFocus === "bottom" ? 0.78 : 1,
+            }}
+            transition={{ type: "spring", stiffness: 240, damping: 30, mass: 0.9 }}
+          >
+          <div className="flex h-full min-h-[300px] flex-col p-6 pt-5">
             <span className="text-[10px] uppercase text-muted tracking-wider mb-4 font-mono flex justify-between">
               Above the Fold
               <a href={normalizedUrl} target="_blank" rel="noreferrer" className="text-accent hover:underline lowercase">visit site ↗</a>
@@ -443,8 +458,18 @@ export function GenerationResult({ url, content, isGenerating, onClose, colorPay
               </div>
             </div>
           </div>
+          </motion.div>
 
-          <div className="flex-1 min-h-0 p-6 pt-5 flex flex-col min-h-[340px]">
+          <motion.div
+            className="min-h-0 overflow-hidden"
+            onMouseEnter={() => setHoverFocus("bottom")}
+            animate={{
+              height: bottomPanelHeight,
+              opacity: hoverFocus === "top" ? 0.82 : 1,
+            }}
+            transition={{ type: "spring", stiffness: 240, damping: 30, mass: 0.9 }}
+          >
+          <div className="h-full min-h-[340px] p-6 pt-5 flex flex-col">
             <span className="text-[10px] uppercase text-muted tracking-wider mb-2 font-mono">Explore the Result</span>
             <span className="text-[10px] text-muted/70 mb-5 font-mono">Switch between source sites, extracted fonts, and verified colors</span>
 
@@ -621,6 +646,7 @@ export function GenerationResult({ url, content, isGenerating, onClose, colorPay
               </AnimatePresence>
             </div>
           </div>
+          </motion.div>
         </div>
       </div>
     </div>
