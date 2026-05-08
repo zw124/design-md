@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react"
+import { AnimatePresence, LayoutGroup, motion } from "framer-motion"
+import { ExternalLink, Globe, Palette, Type, Sparkles } from "lucide-react"
 
 interface GenerationResultProps {
   url: string
@@ -86,6 +88,66 @@ function buildColorGroups(payload?: GenerationResultProps["colorPayload"]) {
     brand: [] as ExtractedColor[],
     neutral: [] as ExtractedColor[],
   };
+}
+
+type FontEntry = {
+  role: string
+  family: string
+  size: string
+  weight: string
+  lineHeight: string
+  usage: string
+}
+
+function extractFontEntries(markdown: string): FontEntry[] {
+  const lines = markdown.split("\n")
+  const tableStart = lines.findIndex((line) => line.includes("| Role | Font Family |"))
+  if (tableStart === -1) return []
+
+  const rows: FontEntry[] = []
+  for (let i = tableStart + 2; i < lines.length; i++) {
+    const line = lines[i].trim()
+    if (!line.startsWith("|")) break
+    const cells = line.split("|").slice(1, -1).map((cell) => cell.trim().replace(/^`|`$/g, ""))
+    if (cells.length < 7) continue
+    rows.push({
+      role: cells[0],
+      family: cells[1],
+      size: cells[2],
+      weight: cells[3],
+      lineHeight: cells[4],
+      usage: cells[6],
+    })
+  }
+  return rows
+}
+
+function buildSiteCards(normalizedUrl: string, fontEntries: FontEntry[]) {
+  const hostname = normalizedUrl.replace(/^https?:\/\//, "").replace(/\/.*$/, "")
+  const primaryFont = fontEntries[0]?.family || "System serif + mono pairing"
+  return [
+    {
+      title: hostname,
+      subtitle: "Live source",
+      href: normalizedUrl,
+      meta: "Open original site",
+      badge: "Current",
+    },
+    {
+      title: `Report for ${hostname}`,
+      subtitle: "Generated system",
+      href: normalizedUrl,
+      meta: "Primary font insight",
+      badge: primaryFont.slice(0, 36),
+    },
+    {
+      title: hostname.replace(/^www\./, ""),
+      subtitle: "Domain reference",
+      href: `https://${hostname.replace(/^www\./, "")}`,
+      meta: "Use this as the canonical root",
+      badge: "Root",
+    },
+  ]
 }
 
 function renderInline(text: string) {
@@ -196,6 +258,7 @@ function renderMarkdown(text: string) {
 
 export function GenerationResult({ url, content, isGenerating, onClose, colorPayload }: GenerationResultProps) {
   const [activeTab, setActiveTab] = useState("Markdown")
+  const [insightTab, setInsightTab] = useState<"Sites" | "Fonts" | "Colors">("Sites")
   
   const normalizedUrl = useMemo(() => {
     if (!url) return "https://stripe.com"
@@ -210,6 +273,8 @@ export function GenerationResult({ url, content, isGenerating, onClose, colorPay
   const isFinished = !isGenerating
   
   const colors = useMemo(() => buildColorGroups(colorPayload), [colorPayload])
+  const fontEntries = useMemo(() => extractFontEntries(visibleOutput), [visibleOutput])
+  const siteCards = useMemo(() => buildSiteCards(normalizedUrl, fontEntries), [normalizedUrl, fontEntries])
 
   const downloadMarkdown = () => {
     const blob = new Blob([visibleOutput], { type: "text/markdown;charset=utf-8" })
@@ -379,59 +444,182 @@ export function GenerationResult({ url, content, isGenerating, onClose, colorPay
             </div>
           </div>
 
-          {/* Bottom Right: Extracted Colors */}
-          <div className="flex-1 md:overflow-y-auto p-6 pt-5 flex flex-col shrink-0 min-h-[300px]">
-            <span className="text-[10px] uppercase text-muted tracking-wider mb-2 font-mono">Actual Site Colors</span>
-            <span className="text-[10px] text-muted/70 mb-4 font-mono">Found from page sources and screenshot pixels</span>
-            
-            <div className="bg-surface border border-[#222220] rounded-xl p-5 flex-1 flex flex-col gap-6">
-              {colors.actual.length === 0 ? (
-                <div className="text-xs text-muted">No reliable site colors found</div>
-              ) : (
-                <>
-                  <div>
-                    <div className="text-[10px] text-muted mb-3 font-mono">Neutral</div>
-                    <div className="flex flex-wrap gap-2">
-                      {colors.neutral.map((color, i) => (
-                        <div key={i} className="group relative">
-                          <div
-                            className="w-9 h-9 rounded-lg shadow-sm"
-                            style={{
-                              backgroundColor: color.hex,
-                              border: isDark(color.hex) ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.12)'
-                            }}
-                          />
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-[10px] px-2 py-1 rounded text-foreground pointer-events-none z-10 whitespace-nowrap">
-                            {color.hex} · {color.source} · {Math.round(color.confidence * 100)}%
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+          <div className="flex-1 md:overflow-y-auto p-6 pt-5 flex flex-col shrink-0 min-h-[340px]">
+            <span className="text-[10px] uppercase text-muted tracking-wider mb-2 font-mono">Explore the Result</span>
+            <span className="text-[10px] text-muted/70 mb-5 font-mono">Switch between source sites, extracted fonts, and verified colors</span>
 
-                  <div>
-                    <div className="text-[10px] text-muted mb-3 font-mono">Accent / Brand</div>
-                    <div className="flex flex-wrap gap-2">
-                      {colors.brand.map((color, i) => (
-                        <div key={i} className="group relative">
-                          <div
-                            className="w-9 h-9 rounded-lg shadow-sm"
-                            style={{
-                              backgroundColor: color.hex,
-                              border: isDark(color.hex) ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.12)'
-                            }}
+            <LayoutGroup>
+              <div className="mb-5 rounded-full border border-[#2a2a28] bg-[#121311] p-1.5 shadow-[0_24px_80px_rgba(0,0,0,0.18)]">
+                <div className="relative flex items-center gap-1">
+                  {([
+                    { label: "Sites", icon: Globe },
+                    { label: "Fonts", icon: Type },
+                    { label: "Colors", icon: Palette },
+                  ] as const).map((tab) => {
+                    const Icon = tab.icon
+                    const active = insightTab === tab.label
+                    return (
+                      <button
+                        key={tab.label}
+                        onClick={() => setInsightTab(tab.label)}
+                        className="relative flex-1"
+                      >
+                        {active ? (
+                          <motion.div
+                            layoutId="insight-pill"
+                            className="absolute inset-0 rounded-full bg-[#F4F1E8] shadow-[0_14px_30px_rgba(255,255,255,0.08)]"
+                            transition={{ type: "spring", stiffness: 380, damping: 34 }}
                           />
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-[10px] px-2 py-1 rounded text-foreground pointer-events-none z-10 whitespace-nowrap">
-                            {color.hex} · {color.source} · {Math.round(color.confidence * 100)}%
+                        ) : null}
+                        <span className={`relative z-10 flex items-center justify-center gap-2 px-4 py-3 text-sm transition-colors ${active ? "text-[#10110F]" : "text-muted hover:text-foreground"}`}>
+                          <Icon className="h-4 w-4" strokeWidth={1.8} />
+                          {tab.label}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            </LayoutGroup>
+
+            <div className="flex-1 overflow-hidden rounded-[28px] border border-[#222220] bg-surface">
+              <AnimatePresence mode="wait">
+                {insightTab === "Sites" && (
+                  <motion.div
+                    key="sites"
+                    initial={{ opacity: 0, y: 28, filter: "blur(10px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, y: -18, filter: "blur(8px)" }}
+                    transition={{ duration: 0.32, ease: [0.2, 0, 0, 1] }}
+                    className="flex h-full flex-col gap-4 p-5"
+                  >
+                    {siteCards.map((card, index) => (
+                      <motion.a
+                        key={card.title}
+                        href={card.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        initial={{ opacity: 0, y: 18 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.05 * index, duration: 0.26 }}
+                        className="group rounded-[22px] border border-[#2A2B29] bg-[radial-gradient(circle_at_top_left,rgba(200,240,74,0.09),transparent_38%),linear-gradient(180deg,#141513,#0F100F)] p-5 transition-transform duration-200 hover:-translate-y-0.5"
+                      >
+                        <div className="mb-3 flex items-start justify-between gap-3">
+                          <div>
+                            <div className="text-base font-display text-foreground">{card.title}</div>
+                            <div className="text-xs font-mono text-muted">{card.subtitle}</div>
+                          </div>
+                          <span className="rounded-full border border-[#343630] bg-[#1A1C18] px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] text-accent">
+                            {card.badge}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs font-mono text-[#B4B0A4]">
+                          <span>{card.meta}</span>
+                          <ExternalLink className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                        </div>
+                      </motion.a>
+                    ))}
+                  </motion.div>
+                )}
+
+                {insightTab === "Fonts" && (
+                  <motion.div
+                    key="fonts"
+                    initial={{ opacity: 0, y: 28, filter: "blur(10px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, y: -18, filter: "blur(8px)" }}
+                    transition={{ duration: 0.32, ease: [0.2, 0, 0, 1] }}
+                    className="flex h-full flex-col gap-4 p-5"
+                  >
+                    {fontEntries.length === 0 ? (
+                      <div className="flex h-full items-center justify-center text-sm text-muted">No font metadata was detected in the generated report yet.</div>
+                    ) : (
+                      fontEntries.slice(0, 6).map((font, index) => (
+                        <motion.div
+                          key={`${font.role}-${index}`}
+                          initial={{ opacity: 0, y: 18 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.05 * index, duration: 0.26 }}
+                          className="rounded-[22px] border border-[#2A2B29] bg-[linear-gradient(180deg,#161715,#10110F)] p-5"
+                        >
+                          <div className="mb-2 flex items-center justify-between gap-3">
+                            <div className="font-display text-lg text-foreground">{font.role}</div>
+                            <div className="rounded-full border border-[#30312F] px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] text-muted">
+                              {font.weight}
+                            </div>
+                          </div>
+                          <div className="mb-3 text-sm text-accent break-words">{font.family}</div>
+                          <div className="grid grid-cols-3 gap-2 text-[11px] font-mono text-[#B4B0A4]">
+                            <div><span className="block text-muted">Size</span>{font.size}</div>
+                            <div><span className="block text-muted">Line</span>{font.lineHeight}</div>
+                            <div><span className="block text-muted">Use</span>{font.usage}</div>
+                          </div>
+                        </motion.div>
+                      ))
+                    )}
+                  </motion.div>
+                )}
+
+                {insightTab === "Colors" && (
+                  <motion.div
+                    key="colors"
+                    initial={{ opacity: 0, y: 28, filter: "blur(10px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, y: -18, filter: "blur(8px)" }}
+                    transition={{ duration: 0.32, ease: [0.2, 0, 0, 1] }}
+                    className="flex h-full flex-col gap-6 p-5"
+                  >
+                    {colors.actual.length === 0 ? (
+                      <div className="flex h-full items-center justify-center text-sm text-muted">No reliable site colors found.</div>
+                    ) : (
+                      <>
+                        <div className="rounded-[22px] border border-[#2A2B29] bg-[#121311] p-5">
+                          <div className="mb-3 flex items-center gap-2 text-xs font-mono text-muted">
+                            <Sparkles className="h-3.5 w-3.5 text-accent" />
+                            Neutral
+                          </div>
+                          <div className="flex flex-wrap gap-3">
+                            {colors.neutral.map((color, i) => (
+                              <div key={i} className="group relative">
+                                <div
+                                  className="h-12 w-12 rounded-2xl shadow-sm transition-transform duration-200 group-hover:scale-105"
+                                  style={{
+                                    backgroundColor: color.hex,
+                                    border: isDark(color.hex) ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.12)'
+                                  }}
+                                />
+                                <div className="mt-2 text-[10px] font-mono text-[#D8D2C4]">{color.hex}</div>
+                              </div>
+                            ))}
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
+
+                        <div className="rounded-[22px] border border-[#2A2B29] bg-[#121311] p-5">
+                          <div className="mb-3 flex items-center gap-2 text-xs font-mono text-muted">
+                            <Sparkles className="h-3.5 w-3.5 text-accent" />
+                            Accent / Brand
+                          </div>
+                          <div className="flex flex-wrap gap-3">
+                            {colors.brand.map((color, i) => (
+                              <div key={i} className="group relative">
+                                <div
+                                  className="h-12 w-12 rounded-2xl shadow-sm transition-transform duration-200 group-hover:scale-105"
+                                  style={{
+                                    backgroundColor: color.hex,
+                                    border: isDark(color.hex) ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.12)'
+                                  }}
+                                />
+                                <div className="mt-2 text-[10px] font-mono text-[#D8D2C4]">{color.hex}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-
           </div>
         </div>
       </div>
