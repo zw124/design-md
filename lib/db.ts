@@ -15,7 +15,7 @@ function getDatabaseUrl() {
   }
 }
 
-const sql = neon(process.env.DATABASE_URL?.startsWith('postgres')
+export const sql = neon(process.env.DATABASE_URL?.startsWith('postgres')
   ? process.env.DATABASE_URL
   : 'postgresql://placeholder:placeholder@localhost/placeholder'
 );

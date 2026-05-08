@@ -7,9 +7,6 @@ import { Footer } from "@/components/footer"
 import {
   DEFAULT_DESIGN_STRUCTURE,
   DEFAULT_GALLERY_ITEMS,
-  DESIGN_STRUCTURE_STORAGE_KEY,
-  GALLERY_DELETED_DEFAULTS_KEY,
-  GALLERY_STORAGE_KEY,
   type GalleryColor,
   type GalleryItem,
   normalizeGalleryUrl,
@@ -17,6 +14,7 @@ import {
 } from "@/lib/gallery-data"
 
 const ADMIN_CODE = "Kai@1124"
+const ADMIN_CODE_STORAGE_KEY = "designmd:admin"
 
 type FormState = {
   name: string
@@ -48,32 +46,6 @@ function splitList(value: string) {
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean)
-}
-
-function loadCustomItems() {
-  try {
-    const stored = localStorage.getItem(GALLERY_STORAGE_KEY)
-    return stored ? (JSON.parse(stored) as GalleryItem[]) : []
-  } catch {
-    return []
-  }
-}
-
-function saveCustomItems(items: GalleryItem[]) {
-  localStorage.setItem(GALLERY_STORAGE_KEY, JSON.stringify(items))
-}
-
-function loadDeletedDefaultIds() {
-  try {
-    const stored = localStorage.getItem(GALLERY_DELETED_DEFAULTS_KEY)
-    return stored ? (JSON.parse(stored) as string[]) : []
-  } catch {
-    return []
-  }
-}
-
-function saveDeletedDefaultIds(ids: string[]) {
-  localStorage.setItem(GALLERY_DELETED_DEFAULTS_KEY, JSON.stringify(ids))
 }
 
 function downloadText(filename: string, content: string) {
@@ -108,27 +80,55 @@ export default function AdminPage() {
   const [code, setCode] = useState("")
   const [authed, setAuthed] = useState(false)
   const [items, setItems] = useState<GalleryItem[]>([])
-  const [deletedDefaultIds, setDeletedDefaultIds] = useState<string[]>([])
   const [structure, setStructure] = useState(DEFAULT_DESIGN_STRUCTURE)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    setAuthed(localStorage.getItem("designmd:admin") === "true")
-    setItems(loadCustomItems())
-    setDeletedDefaultIds(loadDeletedDefaultIds())
-    setStructure(localStorage.getItem(DESIGN_STRUCTURE_STORAGE_KEY) || DEFAULT_DESIGN_STRUCTURE)
+    const isAuthed = localStorage.getItem(ADMIN_CODE_STORAGE_KEY) === "true"
+    setAuthed(isAuthed)
+    if (isAuthed) {
+      void refreshAdminData()
+    }
   }, [])
 
   const normalized = useMemo(() => normalizeGalleryUrl(form.urlInput), [form.urlInput])
-  const visibleItems = useMemo(() => {
-    const deleted = new Set(deletedDefaultIds)
-    return [...items, ...DEFAULT_GALLERY_ITEMS.filter((item) => !deleted.has(item.id))]
-  }, [deletedDefaultIds, items])
+
+  const adminHeaders = () => ({
+    "Content-Type": "application/json",
+    "x-admin-code": ADMIN_CODE,
+  })
+
+  const refreshAdminData = async () => {
+    setLoading(true)
+    try {
+      const [galleryResponse, structureResponse] = await Promise.all([
+        fetch("/api/gallery", { cache: "no-store" }),
+        fetch("/api/design-structure", { cache: "no-store" }),
+      ])
+
+      if (galleryResponse.ok) {
+        const galleryData = (await galleryResponse.json()) as { items?: GalleryItem[] }
+        setItems(galleryData.items || DEFAULT_GALLERY_ITEMS)
+      }
+
+      if (structureResponse.ok) {
+        const structureData = (await structureResponse.json()) as { structure?: string }
+        setStructure(structureData.structure || DEFAULT_DESIGN_STRUCTURE)
+      }
+    } catch {
+      setItems(DEFAULT_GALLERY_ITEMS)
+      setStructure(DEFAULT_DESIGN_STRUCTURE)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const login = () => {
     if (code === ADMIN_CODE) {
-      localStorage.setItem("designmd:admin", "true")
+      localStorage.setItem(ADMIN_CODE_STORAGE_KEY, "true")
       setAuthed(true)
+      void refreshAdminData()
     }
   }
 
@@ -155,7 +155,7 @@ export default function AdminPage() {
     }))
   }
 
-  const upload = () => {
+  const upload = async () => {
     if (!form.name.trim() || !normalized.href) {
       alert("Name and URL are required.")
       return
@@ -176,15 +176,35 @@ export default function AdminPage() {
       markdown: form.markdown.trim() || `# DESIGN.md - ${form.name.trim()}\n`,
     }
 
-    const nextItems = [nextItem, ...items]
-    setItems(nextItems)
-    saveCustomItems(nextItems)
-    setForm(EMPTY_FORM)
+    try {
+      const response = await fetch("/api/gallery", {
+        method: "POST",
+        headers: adminHeaders(),
+        body: JSON.stringify(nextItem),
+      })
+      if (!response.ok) throw new Error("Upload failed")
+      const data = (await response.json()) as { items?: GalleryItem[] }
+      setItems(data.items || [])
+      setForm(EMPTY_FORM)
+    } catch {
+      alert("Upload failed. Check DATABASE_URL and try again.")
+    }
   }
 
-  const saveStructure = () => {
-    localStorage.setItem(DESIGN_STRUCTURE_STORAGE_KEY, structure)
-    alert("DESIGN.md structure saved.")
+  const saveStructure = async () => {
+    try {
+      const response = await fetch("/api/design-structure", {
+        method: "PUT",
+        headers: adminHeaders(),
+        body: JSON.stringify({ structure }),
+      })
+      if (!response.ok) throw new Error("Save failed")
+      const data = (await response.json()) as { structure?: string }
+      setStructure(data.structure || structure)
+      alert("DESIGN.md structure saved.")
+    } catch {
+      alert("Structure save failed. Check DATABASE_URL and try again.")
+    }
   }
 
   const useStructure = () => {
@@ -198,29 +218,39 @@ export default function AdminPage() {
     downloadText("design-md-structure.md", structure)
   }
 
-  const restoreDefaultItems = () => {
+  const restoreDefaultItems = async () => {
     if (!window.confirm("Restore all default Gallery examples?")) return
-    setDeletedDefaultIds([])
-    saveDeletedDefaultIds([])
+    try {
+      const response = await fetch("/api/gallery", {
+        method: "PATCH",
+        headers: adminHeaders(),
+        body: JSON.stringify({ action: "restore-defaults" }),
+      })
+      if (!response.ok) throw new Error("Restore failed")
+      const data = (await response.json()) as { items?: GalleryItem[] }
+      setItems(data.items || [])
+    } catch {
+      alert("Restore failed. Check DATABASE_URL and try again.")
+    }
   }
 
-  const deleteItem = (item: GalleryItem) => {
+  const deleteItem = async (item: GalleryItem) => {
     if (!window.confirm(`Delete "${item.name}" from the Gallery?`)) return
 
     const typed = window.prompt(`Second confirmation: type DELETE to remove "${item.name}".`)
     if (typed !== "DELETE") return
 
-    const isDefault = DEFAULT_GALLERY_ITEMS.some((defaultItem) => defaultItem.id === item.id)
-    if (isDefault) {
-      const nextDeletedIds = Array.from(new Set([...deletedDefaultIds, item.id]))
-      setDeletedDefaultIds(nextDeletedIds)
-      saveDeletedDefaultIds(nextDeletedIds)
-      return
+    try {
+      const response = await fetch(`/api/gallery/${encodeURIComponent(item.id)}`, {
+        method: "DELETE",
+        headers: adminHeaders(),
+      })
+      if (!response.ok) throw new Error("Delete failed")
+      const data = (await response.json()) as { items?: GalleryItem[] }
+      setItems(data.items || [])
+    } catch {
+      alert("Delete failed. Check DATABASE_URL and try again.")
     }
-
-    const nextItems = items.filter((currentItem) => currentItem.id !== item.id)
-    setItems(nextItems)
-    saveCustomItems(nextItems)
   }
 
   if (!authed) {
@@ -259,8 +289,9 @@ export default function AdminPage() {
           <p className="mb-4 font-mono text-xs uppercase tracking-[0.28em] text-accent">Admin</p>
           <h1 className="font-display text-4xl font-bold text-foreground">Gallery manager</h1>
           <p className="mt-4 max-w-2xl font-mono text-sm leading-7 text-muted">
-            Add a URL, fill simple comma-separated fields, write the gallery DESIGN.md, and upload. The Gallery card and detail view will use the same format as the existing examples.
+            Add a URL, fill simple comma-separated fields, write the gallery DESIGN.md, and upload. Changes are saved to the shared Gallery database and show on the public site.
           </p>
+          {loading ? <p className="mt-3 font-mono text-xs text-muted">Loading shared gallery data...</p> : null}
         </div>
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -467,10 +498,10 @@ export default function AdminPage() {
                 </button>
               </div>
               <div className="space-y-3">
-                {visibleItems.length === 0 ? (
+                {items.length === 0 ? (
                   <p className="text-sm text-muted">No gallery items visible.</p>
                 ) : (
-                  visibleItems.map((item) => (
+                  items.map((item: GalleryItem) => (
                     <div key={item.id} className="flex items-center justify-between gap-3 rounded border border-border p-3">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">

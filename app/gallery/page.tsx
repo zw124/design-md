@@ -6,32 +6,18 @@ import { Nav } from "@/components/nav"
 import { Footer } from "@/components/footer"
 import {
   DEFAULT_GALLERY_ITEMS,
-  GALLERY_DELETED_DEFAULTS_KEY,
-  GALLERY_STORAGE_KEY,
   type GalleryItem,
   screenshotUrl,
 } from "@/lib/gallery-data"
 
-function loadDeletedDefaultIds() {
+async function loadGalleryItems() {
   try {
-    const stored = localStorage.getItem(GALLERY_DELETED_DEFAULTS_KEY)
-    return new Set(stored ? (JSON.parse(stored) as string[]) : [])
+    const response = await fetch("/api/gallery", { cache: "no-store" })
+    if (!response.ok) return DEFAULT_GALLERY_ITEMS
+    const data = (await response.json()) as { items?: GalleryItem[] }
+    return data.items?.length ? data.items : DEFAULT_GALLERY_ITEMS
   } catch {
-    return new Set<string>()
-  }
-}
-
-function loadGalleryItems() {
-  if (typeof window === "undefined") return DEFAULT_GALLERY_ITEMS
-  try {
-    const stored = localStorage.getItem(GALLERY_STORAGE_KEY)
-    const custom = stored ? (JSON.parse(stored) as GalleryItem[]) : []
-    const deletedDefaultIds = loadDeletedDefaultIds()
-    const defaults = DEFAULT_GALLERY_ITEMS.filter((item) => !deletedDefaultIds.has(item.id))
-    return [...custom, ...defaults]
-  } catch {
-    const deletedDefaultIds = loadDeletedDefaultIds()
-    return DEFAULT_GALLERY_ITEMS.filter((item) => !deletedDefaultIds.has(item.id))
+    return DEFAULT_GALLERY_ITEMS
   }
 }
 
@@ -203,7 +189,7 @@ export default function GalleryPage() {
   const [selected, setSelected] = useState<GalleryItem | null>(null)
 
   useEffect(() => {
-    setItems(loadGalleryItems())
+    loadGalleryItems().then(setItems)
   }, [])
 
   return (
