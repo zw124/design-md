@@ -18,7 +18,7 @@ const dmMono = DM_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'DESIGN.MD - Design System Generator',
+  title: 'DESIGN.MD by Parallect - Design System Generator',
   description:
     'Paste a URL — get a production-ready DESIGN.md with tokens, typography, spacing, and component patterns. Everything your team needs, in seconds.',
   generator: 'v0.app',
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     google: 'fYvmsQ1jO6zT-oEDi0qGy0VJH4uR3IXWMMEjsXhHX4k',
   },
   openGraph: {
-    title: 'DESIGN.MD - Design System Generator',
+    title: 'DESIGN.MD by Parallect - Design System Generator',
     description: 'Turn any site into a production-ready design system document.',
     type: 'website',
   },

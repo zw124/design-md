@@ -24,9 +24,12 @@ export function Nav() {
     >
       <nav className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-0.5">
+        <Link href="/" className="flex items-baseline gap-2">
           <span className="font-display text-xl font-bold text-foreground tracking-tight">
             DESIGN<span className="text-accent">.MD</span>
+          </span>
+          <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted">
+            by Parallect
           </span>
         </Link>
 

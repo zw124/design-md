@@ -17,9 +17,11 @@ export function DashboardSidebar() {
     <aside className="w-56 flex-shrink-0 border-r border-border bg-surface flex flex-col h-screen sticky top-0">
       {/* Logo */}
       <div className="px-5 py-5 border-b border-border">
-        <Link href="/" className="flex items-center gap-0.5">
-          <span className="font-display text-lg font-bold text-foreground">DESIGN</span>
-          <span className="font-display text-lg font-medium text-accent">.MD</span>
+        <Link href="/" className="flex items-baseline gap-2">
+          <span className="font-display text-lg font-bold text-foreground">DESIGN<span className="text-accent">.MD</span></span>
+          <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted">
+            by Parallect
+          </span>
         </Link>
       </div>
 
