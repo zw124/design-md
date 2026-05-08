@@ -1,7 +1,6 @@
 "use client"
 
 import { signIn, useSession } from "next-auth/react"
-import { motion } from "framer-motion"
 import { useState, useEffect, useRef } from "react"
 import { GenerationResult } from "./generation-result"
 
@@ -18,95 +17,22 @@ const QUICK_TRIES = ["stripe.com", "linear.app", "vercel.com", "apple.com"]
 const FREE_GENERATION_LIMIT = 3
 const USAGE_STORAGE_KEY = "designmd:generation-count"
 const TRUST_WORDMARKS = [
-  { id: "openai", label: "OpenAI", type: "openai" },
-  { id: "anthropic", label: "ANTHROPIC", type: "anthropic" },
-  { id: "gemini", label: "Gemini", type: "gemini" },
-  { id: "windsurf", label: "Windsurf", type: "windsurf" },
-  { id: "cursor", label: "Cursor", type: "cursor" },
+  { id: "openai", label: "OpenAI", icon: "https://api.iconify.design/simple-icons:openai.svg?color=%23ffffff" },
+  { id: "anthropic", label: "Anthropic", icon: "https://api.iconify.design/simple-icons:anthropic.svg?color=%23ffffff" },
+  { id: "gemini", label: "Gemini", icon: "https://api.iconify.design/simple-icons:googlegemini.svg?color=%23ffffff" },
+  { id: "windsurf", label: "Windsurf", icon: "https://api.iconify.design/simple-icons:windsurf.svg?color=%23ffffff" },
+  { id: "cursor", label: "Cursor", icon: "https://api.iconify.design/simple-icons:cursor.svg?color=%23ffffff" },
 ]
 
-function TrustWordmark({ type, label }: { type: string; label: string }) {
-  if (type === "windsurf") {
-    return (
-      <span className="inline-flex h-10 items-center gap-3 text-[#F0EDE4]">
-        <span className="flex h-6 w-6 items-center justify-center">
-          <img
-            src="https://cursor.com/marketing-static/favicon-light.svg"
-            alt=""
-            aria-hidden="true"
-            className="h-4 w-4 opacity-0"
-          />
-        </span>
-        <img
-          src="https://exafunction.github.io/public/brand/windsurf-white-wordmark.svg"
-          alt="Windsurf"
-          className="h-4 w-auto opacity-95"
-        />
+function TrustWordmark({ icon, label }: { icon: string; label: string }) {
+  return (
+    <span className="inline-flex h-12 w-[190px] shrink-0 items-center justify-center gap-3 text-[#F0EDE4]">
+      <span className="grid h-6 w-6 shrink-0 place-items-center">
+        <img src={icon} alt="" aria-hidden="true" className="h-5 w-5 object-contain" />
       </span>
-    )
-  }
-
-  if (type === "cursor") {
-    return (
-      <span className="inline-flex h-10 items-center gap-3 text-[#F0EDE4]">
-        <span className="flex h-6 w-6 items-center justify-center">
-          <img
-            src="https://cursor.com/marketing-static/favicon-light.svg"
-            alt="Cursor"
-            className="h-4 w-4"
-          />
-        </span>
-        <span className="text-[1.2rem] leading-none font-medium tracking-[-0.02em]">Cursor</span>
-      </span>
-    )
-  }
-
-  if (type === "gemini") {
-    return (
-      <span className="inline-flex h-10 items-center gap-3 text-[#F0EDE4]">
-        <span className="flex h-6 w-6 items-center justify-center">
-          <img
-            src="https://www.gstatic.com/lamda/images/gemini_sparkle_aurora_33f86dc0c0257da337c63.svg"
-            alt="Gemini"
-            className="h-4 w-4"
-          />
-        </span>
-        <span className="text-[1.2rem] leading-none font-medium tracking-[-0.01em]">Gemini</span>
-      </span>
-    )
-  }
-
-  if (type === "anthropic") {
-    return (
-      <span
-        className="inline-flex h-10 items-center text-[1.02rem] leading-none tracking-[0.16em] text-[#F0EDE4]"
-        style={{ fontFamily: "Anthropic Sans, Helvetica Neue, Arial, sans-serif", fontWeight: 500 }}
-      >
+      <span className="text-[1.08rem] font-medium leading-none tracking-[-0.01em]">
         {label}
       </span>
-    )
-  }
-
-  if (type === "openai") {
-    return (
-      <span className="inline-flex h-10 items-center gap-3 text-[#F0EDE4]">
-        <span className="flex h-6 w-6 items-center justify-center">
-          <img
-            src="https://www.google.com/s2/favicons?domain=openai.com&sz=128"
-            alt="OpenAI"
-            className="h-4 w-4 rounded-[4px]"
-          />
-        </span>
-        <span className="text-[1.2rem] leading-none font-medium tracking-[-0.02em]">
-          {label}
-        </span>
-      </span>
-    )
-  }
-
-  return (
-    <span className="inline-flex h-10 items-center text-[1.2rem] leading-none font-medium tracking-[-0.02em] text-[#F0EDE4]">
-      {label}
     </span>
   )
 }
@@ -339,32 +265,15 @@ export function HeroSection() {
           </div>
         </div>
 
-        <div className="animate-fade-up-4 relative mt-12 mb-8 overflow-hidden py-4">
+        <div className="animate-fade-up-4 relative mt-12 mb-12 overflow-hidden py-4">
           <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-[#0A0A08] via-[#0A0A08] to-transparent" />
           <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-[#0A0A08] via-[#0A0A08] to-transparent" />
-          <div className="relative h-12 overflow-hidden">
-            <motion.div
-              animate={{ x: ["0%", "-100%"] }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              className="absolute left-0 top-0 flex min-w-max items-center gap-16 whitespace-nowrap"
-            >
-              {TRUST_WORDMARKS.map((item) => (
-                <div key={`a-${item.id}`} className="flex h-12 min-w-fit items-center justify-center">
-                  <TrustWordmark type={item.type} label={item.label} />
-                </div>
+          <div className="trust-marquee relative h-12 overflow-hidden">
+            <div className="trust-marquee-track flex w-max items-center">
+              {[...TRUST_WORDMARKS, ...TRUST_WORDMARKS].map((item, index) => (
+                <TrustWordmark key={`${item.id}-${index}`} icon={item.icon} label={item.label} />
               ))}
-            </motion.div>
-            <motion.div
-              animate={{ x: ["100%", "0%"] }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              className="absolute left-0 top-0 flex min-w-max items-center gap-16 whitespace-nowrap"
-            >
-              {TRUST_WORDMARKS.map((item) => (
-                <div key={`b-${item.id}`} className="flex h-12 min-w-fit items-center justify-center">
-                  <TrustWordmark type={item.type} label={item.label} />
-                </div>
-              ))}
-            </motion.div>
+            </div>
           </div>
         </div>
 

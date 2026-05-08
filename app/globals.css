@@ -176,6 +176,20 @@
   animation: loading-bar 4s ease-in-out forwards;
 }
 
+@keyframes trust-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.trust-marquee-track {
+  animation: trust-marquee 22s linear infinite;
+  will-change: transform;
+}
+
 /* Stagger fade in */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(16px); }
