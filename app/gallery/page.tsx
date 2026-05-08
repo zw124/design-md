@@ -6,20 +6,32 @@ import { Nav } from "@/components/nav"
 import { Footer } from "@/components/footer"
 import {
   DEFAULT_GALLERY_ITEMS,
+  GALLERY_DELETED_DEFAULTS_KEY,
   GALLERY_STORAGE_KEY,
   type GalleryItem,
   screenshotUrl,
 } from "@/lib/gallery-data"
 
+function loadDeletedDefaultIds() {
+  try {
+    const stored = localStorage.getItem(GALLERY_DELETED_DEFAULTS_KEY)
+    return new Set(stored ? (JSON.parse(stored) as string[]) : [])
+  } catch {
+    return new Set<string>()
+  }
+}
+
 function loadGalleryItems() {
   if (typeof window === "undefined") return DEFAULT_GALLERY_ITEMS
   try {
     const stored = localStorage.getItem(GALLERY_STORAGE_KEY)
-    if (!stored) return DEFAULT_GALLERY_ITEMS
-    const custom = JSON.parse(stored) as GalleryItem[]
-    return [...custom, ...DEFAULT_GALLERY_ITEMS]
+    const custom = stored ? (JSON.parse(stored) as GalleryItem[]) : []
+    const deletedDefaultIds = loadDeletedDefaultIds()
+    const defaults = DEFAULT_GALLERY_ITEMS.filter((item) => !deletedDefaultIds.has(item.id))
+    return [...custom, ...defaults]
   } catch {
-    return DEFAULT_GALLERY_ITEMS
+    const deletedDefaultIds = loadDeletedDefaultIds()
+    return DEFAULT_GALLERY_ITEMS.filter((item) => !deletedDefaultIds.has(item.id))
   }
 }
 

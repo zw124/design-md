@@ -5,6 +5,10 @@ import { Plus, Save, Trash2 } from "lucide-react"
 import { Nav } from "@/components/nav"
 import { Footer } from "@/components/footer"
 import {
+  DEFAULT_DESIGN_STRUCTURE,
+  DEFAULT_GALLERY_ITEMS,
+  DESIGN_STRUCTURE_STORAGE_KEY,
+  GALLERY_DELETED_DEFAULTS_KEY,
   GALLERY_STORAGE_KEY,
   type GalleryColor,
   type GalleryItem,
@@ -59,6 +63,29 @@ function saveCustomItems(items: GalleryItem[]) {
   localStorage.setItem(GALLERY_STORAGE_KEY, JSON.stringify(items))
 }
 
+function loadDeletedDefaultIds() {
+  try {
+    const stored = localStorage.getItem(GALLERY_DELETED_DEFAULTS_KEY)
+    return stored ? (JSON.parse(stored) as string[]) : []
+  } catch {
+    return []
+  }
+}
+
+function saveDeletedDefaultIds(ids: string[]) {
+  localStorage.setItem(GALLERY_DELETED_DEFAULTS_KEY, JSON.stringify(ids))
+}
+
+function downloadText(filename: string, content: string) {
+  const blob = new Blob([content], { type: "text/markdown;charset=utf-8" })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement("a")
+  anchor.href = url
+  anchor.download = filename
+  anchor.click()
+  URL.revokeObjectURL(url)
+}
+
 function Field({
   label,
   children,
@@ -81,14 +108,22 @@ export default function AdminPage() {
   const [code, setCode] = useState("")
   const [authed, setAuthed] = useState(false)
   const [items, setItems] = useState<GalleryItem[]>([])
+  const [deletedDefaultIds, setDeletedDefaultIds] = useState<string[]>([])
+  const [structure, setStructure] = useState(DEFAULT_DESIGN_STRUCTURE)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
 
   useEffect(() => {
     setAuthed(localStorage.getItem("designmd:admin") === "true")
     setItems(loadCustomItems())
+    setDeletedDefaultIds(loadDeletedDefaultIds())
+    setStructure(localStorage.getItem(DESIGN_STRUCTURE_STORAGE_KEY) || DEFAULT_DESIGN_STRUCTURE)
   }, [])
 
   const normalized = useMemo(() => normalizeGalleryUrl(form.urlInput), [form.urlInput])
+  const visibleItems = useMemo(() => {
+    const deleted = new Set(deletedDefaultIds)
+    return [...items, ...DEFAULT_GALLERY_ITEMS.filter((item) => !deleted.has(item.id))]
+  }, [deletedDefaultIds, items])
 
   const login = () => {
     if (code === ADMIN_CODE) {
@@ -147,8 +182,43 @@ export default function AdminPage() {
     setForm(EMPTY_FORM)
   }
 
-  const deleteItem = (id: string) => {
-    const nextItems = items.filter((item) => item.id !== id)
+  const saveStructure = () => {
+    localStorage.setItem(DESIGN_STRUCTURE_STORAGE_KEY, structure)
+    alert("DESIGN.md structure saved.")
+  }
+
+  const useStructure = () => {
+    setForm((current) => ({
+      ...current,
+      markdown: structure,
+    }))
+  }
+
+  const downloadStructure = () => {
+    downloadText("design-md-structure.md", structure)
+  }
+
+  const restoreDefaultItems = () => {
+    if (!window.confirm("Restore all default Gallery examples?")) return
+    setDeletedDefaultIds([])
+    saveDeletedDefaultIds([])
+  }
+
+  const deleteItem = (item: GalleryItem) => {
+    if (!window.confirm(`Delete "${item.name}" from the Gallery?`)) return
+
+    const typed = window.prompt(`Second confirmation: type DELETE to remove "${item.name}".`)
+    if (typed !== "DELETE") return
+
+    const isDefault = DEFAULT_GALLERY_ITEMS.some((defaultItem) => defaultItem.id === item.id)
+    if (isDefault) {
+      const nextDeletedIds = Array.from(new Set([...deletedDefaultIds, item.id]))
+      setDeletedDefaultIds(nextDeletedIds)
+      saveDeletedDefaultIds(nextDeletedIds)
+      return
+    }
+
+    const nextItems = items.filter((currentItem) => currentItem.id !== item.id)
     setItems(nextItems)
     saveCustomItems(nextItems)
   }
@@ -287,14 +357,77 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <Field label="Gallery DESIGN.md">
+              <div className="grid gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <span className="font-mono text-xs uppercase tracking-[0.2em] text-muted">
+                    Gallery DESIGN.md
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={useStructure}
+                      className="rounded border border-border px-3 py-2 text-xs text-muted transition hover:text-foreground"
+                      type="button"
+                    >
+                      Use saved structure
+                    </button>
+                    <button
+                      onClick={downloadStructure}
+                      className="rounded border border-border px-3 py-2 text-xs text-muted transition hover:text-foreground"
+                      type="button"
+                    >
+                      Download structure
+                    </button>
+                  </div>
+                </div>
                 <textarea
                   value={form.markdown}
                   onChange={(event) => setForm({ ...form, markdown: event.target.value })}
                   className={`${inputClass} min-h-64 resize-y leading-6`}
                   placeholder="# DESIGN.md - Mocha..."
                 />
-              </Field>
+              </div>
+
+              <div className="rounded-lg border border-border bg-surface p-4">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">
+                      DESIGN.md structure
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-muted">
+                      Edit this template once, then reuse it when writing Gallery DESIGN.md entries.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={useStructure}
+                      className="rounded border border-border px-3 py-2 text-xs text-muted transition hover:text-foreground"
+                      type="button"
+                    >
+                      Use in form
+                    </button>
+                    <button
+                      onClick={saveStructure}
+                      className="rounded border border-border px-3 py-2 text-xs text-muted transition hover:text-foreground"
+                      type="button"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={downloadStructure}
+                      className="rounded bg-accent px-3 py-2 text-xs font-semibold text-[#0A0A08] transition hover:bg-accent-muted"
+                      type="button"
+                    >
+                      Download
+                    </button>
+                  </div>
+                </div>
+                <textarea
+                  value={structure}
+                  onChange={(event) => setStructure(event.target.value)}
+                  className={`${inputClass} min-h-96 w-full resize-y font-mono leading-6`}
+                  placeholder="# DESIGN.md structure"
+                />
+              </div>
 
               <button
                 onClick={upload}
@@ -323,19 +456,35 @@ export default function AdminPage() {
             </div>
 
             <div className="rounded-lg border border-border bg-surface p-4">
-              <p className="mb-3 font-mono text-xs uppercase tracking-[0.2em] text-muted">Uploaded items</p>
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Gallery items</p>
+                <button
+                  onClick={restoreDefaultItems}
+                  className="rounded border border-border px-2.5 py-1.5 text-[11px] text-muted transition hover:text-foreground"
+                  type="button"
+                >
+                  Restore defaults
+                </button>
+              </div>
               <div className="space-y-3">
-                {items.length === 0 ? (
-                  <p className="text-sm text-muted">No custom gallery items yet.</p>
+                {visibleItems.length === 0 ? (
+                  <p className="text-sm text-muted">No gallery items visible.</p>
                 ) : (
-                  items.map((item) => (
+                  visibleItems.map((item) => (
                     <div key={item.id} className="flex items-center justify-between gap-3 rounded border border-border p-3">
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-foreground">{item.name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="truncate text-sm font-semibold text-foreground">{item.name}</p>
+                          {DEFAULT_GALLERY_ITEMS.some((defaultItem) => defaultItem.id === item.id) ? (
+                            <span className="rounded bg-[#202026] px-2 py-0.5 text-[10px] uppercase tracking-[0.16em] text-muted">
+                              default
+                            </span>
+                          ) : null}
+                        </div>
                         <p className="truncate text-xs text-muted">{item.url}</p>
                       </div>
                       <button
-                        onClick={() => deleteItem(item.id)}
+                        onClick={() => deleteItem(item)}
                         className="grid h-9 w-9 shrink-0 place-items-center rounded border border-border text-muted transition hover:text-foreground"
                       >
                         <Trash2 className="h-4 w-4" />
