@@ -52,13 +52,13 @@ const PAGE_TYPE_FILTERS = [
 ]
 
 const LOGO_TRACK = [
-  { name: "Cursor", domain: "cursor.com", ring: "#e8eefc" },
-  { name: "OpenAI", domain: "openai.com", ring: "#e9e5db" },
-  { name: "Anthropic", domain: "anthropic.com", ring: "#efe5d8" },
-  { name: "Gemini", domain: "gemini.google.com", ring: "#ece9ff" },
-  { name: "Windsurf", domain: "windsurf.com", ring: "#e7eefb" },
-  { name: "Perplexity", domain: "perplexity.ai", ring: "#e8f0ec" },
-] as const
+  "Cursor",
+  "OpenAI",
+  "Anthropic",
+  "Gemini",
+  "Windsurf",
+  "Perplexity",
+]
 
 type LibraryItem = {
   title: string
@@ -75,7 +75,7 @@ const LIBRARY_ITEMS: LibraryItem[] = [
   {
     title: "Calendly",
     site: "calendly.com",
-    screenshot: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=1200&q=80&auto=format&fit=crop",
+    screenshot: "https://image.thum.io/get/width/1200/crop/760/noanimate/https://calendly.com/",
     pageType: "Dashboard",
     uxPatterns: ["Empty State", "Guided Setup"],
     uiElements: ["Cards & Tiles", "Button", "Dropdown", "Sidebar & Drawer", "Icon", "Avatar"],
@@ -85,7 +85,7 @@ const LIBRARY_ITEMS: LibraryItem[] = [
   {
     title: "Stripe",
     site: "stripe.com",
-    screenshot: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1200&q=80&auto=format&fit=crop",
+    screenshot: "https://image.thum.io/get/width/1200/crop/760/noanimate/https://stripe.com/",
     pageType: "Paywall & Subscription",
     uxPatterns: ["Progressive Disclosure", "Contextual CTA"],
     uiElements: ["Cards & Tiles", "Button", "Navigation Bar", "Badge"],
@@ -95,7 +95,7 @@ const LIBRARY_ITEMS: LibraryItem[] = [
   {
     title: "Notion",
     site: "notion.so",
-    screenshot: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&q=80&auto=format&fit=crop",
+    screenshot: "https://image.thum.io/get/width/1200/crop/760/noanimate/https://www.notion.so/",
     pageType: "Product Page & Landing",
     uxPatterns: ["Social Proof", "Sectioned Narrative"],
     uiElements: ["Button", "Illustration", "Navigation Bar", "Footer"],
@@ -105,7 +105,7 @@ const LIBRARY_ITEMS: LibraryItem[] = [
   {
     title: "Linear",
     site: "linear.app",
-    screenshot: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80&auto=format&fit=crop",
+    screenshot: "https://image.thum.io/get/width/1200/crop/760/noanimate/https://linear.app/",
     pageType: "Product Page & Landing",
     uxPatterns: ["Feature Comparison", "Sticky Navigation"],
     uiElements: ["Cards & Tiles", "Button", "Carousel", "Icon"],
@@ -115,7 +115,7 @@ const LIBRARY_ITEMS: LibraryItem[] = [
   {
     title: "Webflow",
     site: "webflow.com",
-    screenshot: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=1200&q=80&auto=format&fit=crop",
+    screenshot: "https://image.thum.io/get/width/1200/crop/760/noanimate/https://webflow.com/",
     pageType: "Product Details",
     uxPatterns: ["Feature Callout", "Visual Hierarchy"],
     uiElements: ["Cards & Tiles", "Button", "Accordion & Collapse"],
@@ -125,7 +125,7 @@ const LIBRARY_ITEMS: LibraryItem[] = [
   {
     title: "Framer",
     site: "framer.com",
-    screenshot: "https://images.unsplash.com/photo-1618761714954-0b8cd0026356?w=1200&q=80&auto=format&fit=crop",
+    screenshot: "https://image.thum.io/get/width/1200/crop/760/noanimate/https://www.framer.com/",
     pageType: "Product Page & Landing",
     uxPatterns: ["Floating CTA", "Product Storytelling"],
     uiElements: ["Button", "Cards & Tiles", "Animation"],
@@ -170,22 +170,13 @@ function CategoryGlyph({ kind }: { kind: (typeof LIBRARY_TABS)[number]["icon"] }
   )
 }
 
-function LogoChip({
-  logo,
-}: {
-  logo: (typeof LOGO_TRACK)[number]
-}) {
-  const favicon = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(logo.domain)}&sz=128`
-
+function LogoChip({ label }: { label: string }) {
   return (
-    <div className="flex min-w-fit items-center gap-3 rounded-full border border-[#e4dfd3] bg-white/96 px-4 py-3 shadow-[0_10px_24px_rgba(17,17,17,0.06)] backdrop-blur-sm">
-      <div
-        className="grid h-10 w-10 place-items-center rounded-full border border-[#ece6d8] bg-white"
-        style={{ boxShadow: `inset 0 0 0 6px ${logo.ring}` }}
-      >
-        <img src={favicon} alt={`${logo.name} logo`} className="h-5 w-5 rounded-[4px]" />
+    <div className="flex min-w-fit items-center gap-3 rounded-full border border-[#e4dfd3] bg-white px-4 py-3 shadow-[0_8px_24px_rgba(17,17,17,0.06)]">
+      <div className="grid h-9 w-9 place-items-center rounded-full border border-[#ece6d8] bg-[#f7f4ed] text-[11px] font-semibold text-[#111111]">
+        {label.slice(0, 2).toUpperCase()}
       </div>
-      <div className="pr-1 text-sm font-medium tracking-[-0.02em] text-[#141414]">{logo.name}</div>
+      <div className="text-sm font-medium text-[#141414]">{label}</div>
     </div>
   )
 }
@@ -210,33 +201,24 @@ function LibraryDetailPanel({
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 sm:px-6">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 flex max-h-[90vh] w-full max-w-[1000px] flex-col overflow-hidden rounded-[28px] border border-[#e7e1d3] bg-white shadow-[0_40px_100px_rgba(0,0,0,0.2)]"
-      >
-        <div className="grid flex-1 overflow-y-auto grid-cols-1 xl:grid-cols-[minmax(0,1.6fr)_380px]">
-          <div className="border-b border-[#eee7d8] p-5 xl:border-b-0 xl:border-r">
-            <div className="overflow-hidden rounded-[22px] border border-[#e8e1d5] bg-[#fbfaf7]">
-              <img
-                src={item.screenshot}
-                alt={`${item.title} screenshot`}
-                className="h-auto w-full object-cover"
-              />
-            </div>
+    <motion.div
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 18 }}
+      transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
+      className="mt-8 overflow-hidden rounded-[28px] border border-[#e7e1d3] bg-white shadow-[0_26px_80px_rgba(17,17,17,0.10)]"
+    >
+      <div className="grid min-h-[640px] grid-cols-1 xl:grid-cols-[minmax(0,1.6fr)_380px]">
+        <div className="border-b border-[#eee7d8] p-5 xl:border-b-0 xl:border-r">
+          <div className="overflow-hidden rounded-[22px] border border-[#e8e1d5] bg-[#fbfaf7]">
+            <img
+              src={item.screenshot}
+              alt={`${item.title} screenshot`}
+              className="h-auto w-full object-cover"
+            />
           </div>
-          <div className="flex flex-col bg-[#fcfbf7]">
+        </div>
+        <div className="flex flex-col bg-[#fcfbf7]">
           <div className="flex items-start justify-between border-b border-[#eee7d8] p-5">
             <div className="min-w-0">
               <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#90897a]">Library entry</p>
@@ -297,20 +279,19 @@ function LibraryDetailPanel({
                 color anchors.
               </p>
             </div>
-              <a
-                href={`https://${item.site}`}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-6 inline-flex items-center gap-2 rounded-full border border-[#111111] bg-[#111111] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#262521]"
-              >
-                Visit original site
-                <ExternalLink className="h-4 w-4" />
-              </a>
-            </div>
+            <a
+              href={`https://${item.site}`}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-6 inline-flex items-center gap-2 rounded-full border border-[#111111] bg-[#111111] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#262521]"
+            >
+              Visit original site
+              <ExternalLink className="h-4 w-4" />
+            </a>
           </div>
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </motion.div>
   )
 }
 
@@ -478,14 +459,14 @@ export function HeroSection() {
       <section className="relative overflow-hidden bg-[#f7f4ed] text-[#111111]">
         <div className="absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.9),transparent_55%),linear-gradient(180deg,#fbfaf6_0%,#f7f4ed_100%)]" />
         <div className="relative mx-auto max-w-[1400px] px-6 pb-20 pt-32 md:px-8 xl:px-10">
-          <div className="flex flex-col items-center text-center">
-            <div className="max-w-[800px] flex flex-col items-center">
+          <div className="grid items-start gap-12 xl:grid-cols-[minmax(0,1.05fr)_520px]">
+            <div className="max-w-[760px]">
               <div className="inline-flex items-center gap-2 rounded-full border border-[#e8e1d3] bg-white px-3 py-2 text-[12px] font-medium text-[#5b564b] shadow-[0_10px_30px_rgba(17,17,17,0.05)]">
                 <span className="inline-flex h-2 w-2 rounded-full bg-[#92c35e]" />
                 Design library and clean DESIGN.md generation
               </div>
 
-              <h1 className="mt-8 max-w-[900px] text-[42px] font-semibold leading-[1.05] tracking-[-0.04em] text-[#121212] md:text-[56px] xl:text-[64px]">
+              <h1 className="mt-8 max-w-[900px] text-[56px] font-semibold leading-[0.94] tracking-[-0.06em] text-[#121212] md:text-[78px] xl:text-[96px]">
                 Build a clean design library, then switch into exact DESIGN.md output.
               </h1>
 
@@ -494,7 +475,7 @@ export function HeroSection() {
                 types, UX patterns, UI elements, fonts, and colors.
               </p>
 
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <div className="mt-8 flex flex-wrap items-center gap-3">
                 <div className="relative inline-flex rounded-full border border-[#ddd6c6] bg-white p-1 shadow-[0_12px_30px_rgba(17,17,17,0.06)]">
                   <motion.div
                     layout
@@ -527,7 +508,7 @@ export function HeroSection() {
                 </div>
               </div>
 
-              <div id="generator" className="mt-8 w-full max-w-[760px] text-left">
+              <div id="generator" className="mt-8">
                 <AnimatePresence mode="wait">
                   {mode === "generate" ? (
                     <motion.div
@@ -626,27 +607,55 @@ export function HeroSection() {
                 </AnimatePresence>
               </div>
             </div>
-          </div>
 
-          <div className="mt-24 mb-10 w-full overflow-hidden">
-            <div className="relative flex overflow-hidden py-4">
-              <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-32 bg-[linear-gradient(90deg,#f7f4ed_0%,transparent_100%)]" />
-              <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-32 bg-[linear-gradient(270deg,#f7f4ed_0%,transparent_100%)]" />
-              <motion.div
-                animate={{ x: ["0%", "-50%"] }}
-                transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-                className="flex w-max items-center gap-8"
-              >
-                {[...LOGO_TRACK, ...LOGO_TRACK, ...LOGO_TRACK, ...LOGO_TRACK].map((logo, index) => (
-                  <div key={`scroll-${logo.name}-${index}`} className="scale-[1.15] mx-3">
-                    <LogoChip logo={logo} />
+            <div className="xl:pt-6">
+              <div className="rounded-[34px] border border-[#e9e2d4] bg-white p-5 shadow-[0_28px_80px_rgba(17,17,17,0.08)]">
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#938b7d]">Trust signals</p>
+                    <h2 className="mt-2 text-[28px] font-semibold tracking-[-0.04em] text-[#121212]">
+                      Teams expect real product references.
+                    </h2>
                   </div>
-                ))}
-              </motion.div>
+                  <div className="hidden rounded-full border border-[#ece5d8] bg-[#faf8f3] px-3 py-2 text-xs font-medium text-[#6e685e] md:inline-flex">
+                    Updated weekly
+                  </div>
+                </div>
+
+                <div className="space-y-4 overflow-hidden">
+                  {[0, 1].map((row) => (
+                    <div key={row} className="overflow-hidden">
+                      <motion.div
+                        animate={{ x: row === 0 ? ["0%", "-50%"] : ["-50%", "0%"] }}
+                        transition={{ duration: row === 0 ? 24 : 28, repeat: Infinity, ease: "linear" }}
+                        className="flex w-max gap-4"
+                      >
+                        {[...LOGO_TRACK, ...LOGO_TRACK].map((logo, index) => (
+                          <LogoChip key={`${row}-${logo}-${index}`} label={logo} />
+                        ))}
+                      </motion.div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-5 rounded-[26px] border border-[#ece5d8] bg-[#fbfaf7] p-5">
+                  <div className="flex items-center gap-3">
+                    <div className="grid h-12 w-12 place-items-center rounded-full bg-[#111111] text-white">
+                      <Sparkles className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-[#141414]">Precision-first browsing</p>
+                      <p className="text-sm text-[#6f685e]">
+                        Library first. Generate second. No clutter between the two.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <section id="library" className="mt-12">
+          <section id="library" className="mt-18">
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
@@ -661,7 +670,7 @@ export function HeroSection() {
                 </div>
               </div>
 
-              <div className="sticky top-[84px] z-20 rounded-[34px] border border-[#e7dfd0] bg-[rgba(255,255,255,0.88)] p-2 shadow-[0_24px_70px_rgba(17,17,17,0.08)] backdrop-blur-xl">
+              <div className="sticky top-[84px] z-20 rounded-[30px] border border-[#e7dfd0] bg-[rgba(255,255,255,0.82)] p-2 shadow-[0_20px_60px_rgba(17,17,17,0.08)] backdrop-blur-xl">
                 <div className="relative flex flex-wrap gap-2">
                   {LIBRARY_TABS.map((tab) => {
                     const active = activeLibraryTab === tab.id
@@ -670,9 +679,7 @@ export function HeroSection() {
                         key={tab.id}
                         onClick={() => setActiveLibraryTab(tab.id)}
                         className={`relative inline-flex items-center gap-3 rounded-full px-5 py-3 text-sm font-medium transition ${
-                          active
-                            ? "bg-[#22232a] text-white shadow-[0_12px_30px_rgba(17,17,17,0.18)]"
-                            : "text-[#26251f] hover:bg-[#f1ede5]"
+                          active ? "bg-[#22232a] text-white shadow-[0_12px_30px_rgba(17,17,17,0.18)]" : "text-[#26251f] hover:bg-[#f1ede5]"
                         }`}
                       >
                         <CategoryGlyph kind={tab.icon} />
@@ -712,7 +719,7 @@ export function HeroSection() {
                     }}
                     whileHover={{ y: -6 }}
                     transition={{ type: "spring", stiffness: 320, damping: 28 }}
-                    className="overflow-hidden rounded-[28px] border border-[#e6dfd1] bg-white text-left shadow-[0_20px_60px_rgba(17,17,17,0.06)] transition-shadow hover:shadow-[0_26px_80px_rgba(17,17,17,0.10)]"
+                    className="overflow-hidden rounded-[28px] border border-[#e6dfd1] bg-white text-left shadow-[0_20px_60px_rgba(17,17,17,0.06)]"
                   >
                     <div className="aspect-[1.38/1] overflow-hidden border-b border-[#ece5d8] bg-[#f8f6f0]">
                       <img
