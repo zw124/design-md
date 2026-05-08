@@ -1,4 +1,9 @@
-import { DEFAULT_DESIGN_STRUCTURE, LEGACY_DEFAULT_GALLERY_IDS, type GalleryItem } from "@/lib/gallery-data"
+import {
+  DEFAULT_DESIGN_STRUCTURE,
+  DESIGN_STRUCTURE_VERSION,
+  LEGACY_DEFAULT_GALLERY_IDS,
+  type GalleryItem,
+} from "@/lib/gallery-data"
 import { assertDatabaseConfigured, sql } from "@/lib/db"
 
 type GalleryRow = {
@@ -80,6 +85,23 @@ async function ensureGalleryTables() {
     values ('design_structure', ${DEFAULT_DESIGN_STRUCTURE})
     on conflict (key) do nothing
   `
+
+  const versionRows = (await sql`
+    select value from app_settings where key = 'design_structure_version' limit 1
+  `) as Array<{ value: string }>
+
+  if (versionRows[0]?.value !== DESIGN_STRUCTURE_VERSION) {
+    await sql`
+      insert into app_settings (key, value, updated_at)
+      values ('design_structure', ${DEFAULT_DESIGN_STRUCTURE}, now())
+      on conflict (key) do update set value = excluded.value, updated_at = now()
+    `
+    await sql`
+      insert into app_settings (key, value, updated_at)
+      values ('design_structure_version', ${DESIGN_STRUCTURE_VERSION}, now())
+      on conflict (key) do update set value = excluded.value, updated_at = now()
+    `
+  }
 }
 
 export async function listGalleryItems() {
@@ -173,6 +195,11 @@ export async function saveDesignStructure(value: string) {
   await sql`
     insert into app_settings (key, value, updated_at)
     values ('design_structure', ${value}, now())
+    on conflict (key) do update set value = excluded.value, updated_at = now()
+  `
+  await sql`
+    insert into app_settings (key, value, updated_at)
+    values ('design_structure_version', ${DESIGN_STRUCTURE_VERSION}, now())
     on conflict (key) do update set value = excluded.value, updated_at = now()
   `
 }
