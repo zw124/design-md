@@ -52,13 +52,13 @@ const PAGE_TYPE_FILTERS = [
 ]
 
 const LOGO_TRACK = [
-  "Cursor",
-  "OpenAI",
-  "Anthropic",
-  "Gemini",
-  "Windsurf",
-  "Perplexity",
-]
+  { name: "Cursor", domain: "cursor.com", ring: "#e8eefc" },
+  { name: "OpenAI", domain: "openai.com", ring: "#e9e5db" },
+  { name: "Anthropic", domain: "anthropic.com", ring: "#efe5d8" },
+  { name: "Gemini", domain: "gemini.google.com", ring: "#ece9ff" },
+  { name: "Windsurf", domain: "windsurf.com", ring: "#e7eefb" },
+  { name: "Perplexity", domain: "perplexity.ai", ring: "#e8f0ec" },
+] as const
 
 type LibraryItem = {
   title: string
@@ -170,13 +170,22 @@ function CategoryGlyph({ kind }: { kind: (typeof LIBRARY_TABS)[number]["icon"] }
   )
 }
 
-function LogoChip({ label }: { label: string }) {
+function LogoChip({
+  logo,
+}: {
+  logo: (typeof LOGO_TRACK)[number]
+}) {
+  const favicon = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(logo.domain)}&sz=128`
+
   return (
-    <div className="flex min-w-fit items-center gap-3 rounded-full border border-[#e4dfd3] bg-white px-4 py-3 shadow-[0_8px_24px_rgba(17,17,17,0.06)]">
-      <div className="grid h-9 w-9 place-items-center rounded-full border border-[#ece6d8] bg-[#f7f4ed] text-[11px] font-semibold text-[#111111]">
-        {label.slice(0, 2).toUpperCase()}
+    <div className="flex min-w-fit items-center gap-3 rounded-full border border-[#e4dfd3] bg-white/96 px-4 py-3 shadow-[0_10px_24px_rgba(17,17,17,0.06)] backdrop-blur-sm">
+      <div
+        className="grid h-10 w-10 place-items-center rounded-full border border-[#ece6d8] bg-white"
+        style={{ boxShadow: `inset 0 0 0 6px ${logo.ring}` }}
+      >
+        <img src={favicon} alt={`${logo.name} logo`} className="h-5 w-5 rounded-[4px]" />
       </div>
-      <div className="text-sm font-medium text-[#141414]">{label}</div>
+      <div className="pr-1 text-sm font-medium tracking-[-0.02em] text-[#141414]">{logo.name}</div>
     </div>
   )
 }
@@ -622,7 +631,9 @@ export function HeroSection() {
                   </div>
                 </div>
 
-                <div className="space-y-4 overflow-hidden">
+                <div className="relative space-y-4 overflow-hidden">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-[linear-gradient(90deg,#ffffff_0%,rgba(255,255,255,0)_100%)]" />
+                  <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-[linear-gradient(270deg,#ffffff_0%,rgba(255,255,255,0)_100%)]" />
                   {[0, 1].map((row) => (
                     <div key={row} className="overflow-hidden">
                       <motion.div
@@ -631,7 +642,7 @@ export function HeroSection() {
                         className="flex w-max gap-4"
                       >
                         {[...LOGO_TRACK, ...LOGO_TRACK].map((logo, index) => (
-                          <LogoChip key={`${row}-${logo}-${index}`} label={logo} />
+                          <LogoChip key={`${row}-${logo.name}-${index}`} logo={logo} />
                         ))}
                       </motion.div>
                     </div>
@@ -670,7 +681,7 @@ export function HeroSection() {
                 </div>
               </div>
 
-              <div className="sticky top-[84px] z-20 rounded-[30px] border border-[#e7dfd0] bg-[rgba(255,255,255,0.82)] p-2 shadow-[0_20px_60px_rgba(17,17,17,0.08)] backdrop-blur-xl">
+              <div className="sticky top-[84px] z-20 rounded-[34px] border border-[#e7dfd0] bg-[rgba(255,255,255,0.88)] p-2 shadow-[0_24px_70px_rgba(17,17,17,0.08)] backdrop-blur-xl">
                 <div className="relative flex flex-wrap gap-2">
                   {LIBRARY_TABS.map((tab) => {
                     const active = activeLibraryTab === tab.id
@@ -679,7 +690,9 @@ export function HeroSection() {
                         key={tab.id}
                         onClick={() => setActiveLibraryTab(tab.id)}
                         className={`relative inline-flex items-center gap-3 rounded-full px-5 py-3 text-sm font-medium transition ${
-                          active ? "bg-[#22232a] text-white shadow-[0_12px_30px_rgba(17,17,17,0.18)]" : "text-[#26251f] hover:bg-[#f1ede5]"
+                          active
+                            ? "bg-[#22232a] text-white shadow-[0_12px_30px_rgba(17,17,17,0.18)]"
+                            : "text-[#26251f] hover:bg-[#f1ede5]"
                         }`}
                       >
                         <CategoryGlyph kind={tab.icon} />
@@ -719,7 +732,7 @@ export function HeroSection() {
                     }}
                     whileHover={{ y: -6 }}
                     transition={{ type: "spring", stiffness: 320, damping: 28 }}
-                    className="overflow-hidden rounded-[28px] border border-[#e6dfd1] bg-white text-left shadow-[0_20px_60px_rgba(17,17,17,0.06)]"
+                    className="overflow-hidden rounded-[28px] border border-[#e6dfd1] bg-white text-left shadow-[0_20px_60px_rgba(17,17,17,0.06)] transition-shadow hover:shadow-[0_26px_80px_rgba(17,17,17,0.10)]"
                   >
                     <div className="aspect-[1.38/1] overflow-hidden border-b border-[#ece5d8] bg-[#f8f6f0]">
                       <img
