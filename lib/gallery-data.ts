@@ -389,7 +389,503 @@ export const DEFAULT_DESIGN_STRUCTURE = `# Design System Inspired by [Website Na
 10. **Every interactive element respects [px] touch minimum.** Navigation items, buttons, and links all maintain [px] height. Input fields are [px] tall with [px] horizontal padding.
 `
 
-export const DEFAULT_GALLERY_ITEMS: GalleryItem[] = []
+type CuratedGalleryInput = Omit<GalleryItem, "markdown">
+
+function createCuratedMarkdown(item: CuratedGalleryInput) {
+  const primary = item.colors[0]
+  const secondary = item.colors[1] || primary
+  const surface = item.colors[2] || primary
+
+  return `# Design System Inspired by ${item.name}
+
+## 1. Visual Theme & Atmosphere
+
+${item.name}'s interface is a strong reference for ${item.description.toLowerCase()}. The system uses a clear product hierarchy, direct interaction patterns, and a disciplined palette built around ${primary.name} (${primary.value}), ${secondary.name} (${secondary.value}), and ${surface.name} (${surface.value}). The layout should feel precise, scannable, and agent-friendly, with every section organized around reusable UI rules rather than loose visual description.
+
+**Key Characteristics**
+- Page types: ${item.pageTypes.join(", ")}
+- UX patterns: ${item.uxPatterns.join(", ")}
+- UI elements: ${item.uiElements.join(", ")}
+- Primary color reference: ${primary.name} (${primary.value})
+- Secondary color reference: ${secondary.name} (${secondary.value})
+- Surface color reference: ${surface.name} (${surface.value})
+- Use compact, high-signal sections with clear labels
+- Keep screenshots and component notes tied to the original source URL: ${item.href}
+
+## 2. Color Palette & Roles
+
+### Primary
+
+- **Primary Action ${primary.name}** (\`${primary.value}\`): Use for primary actions, selected states, active controls, and high-emphasis links.
+- **Primary Hover** (\`${primary.value}\`): Use the same verified color with a 6-10% darker overlay when a separate hover token is not directly verified.
+- **Primary Press** (\`${primary.value}\`): Use the same verified color with a 12-16% darker overlay for pressed states.
+
+### Neutral Scale
+
+${item.colors
+  .map((color) => `- **${color.name}** (\`${color.value}\`): Verified gallery palette color for ${item.name}.`)
+  .join("\n")}
+
+### Surface & Borders
+
+- **Surface Base:** Use ${surface.value} for the dominant panel or page surface when appropriate.
+- **Border Implicit:** Use \`rgba(255, 255, 255, 0.12)\` on dark layouts or \`rgba(0, 0, 0, 0.10)\` on light layouts.
+- **Navigation Surface:** Use \`rgba(255, 255, 255, 0.82)\` for light glass navigation or \`rgba(10, 10, 12, 0.78)\` for dark glass navigation.
+
+## 3. Typography Rules
+
+| Role | Font | Size | Weight | Line Height | Letter Spacing | Notes |
+|------|------|------|--------|-------------|----------------|-------|
+| Display Hero | Modern sans-serif | 48px | 650 | 56px | 0px | Product hero and top-level page heading |
+| Heading Large | Modern sans-serif | 32px | 620 | 40px | 0px | Section headings and primary card titles |
+| Heading Primary | Modern sans-serif | 24px | 600 | 32px | 0px | Card headlines and modal titles |
+| Body Default | Modern sans-serif | 16px | 400 | 24px | 0px | Paragraph and content text |
+| Body Compact | Modern sans-serif | 14px | 450 | 20px | 0px | Navigation, labels, and dense UI rows |
+| Small Label | Modern sans-serif | 12px | 500 | 16px | 0px | Captions, badges, metadata |
+| Button | Modern sans-serif | 14px | 600 | 20px | 0px | Primary and secondary button text |
+| Code | Monospace | 13px | 400 | 20px | 0px | Tokens, CSS values, implementation notes |
+
+## 4. Component Stylings
+
+### Buttons
+
+#### Primary Button
+- **Background:** \`${primary.value}\`
+- **Text Color:** \`#FFFFFF\`
+- **Font:** Modern sans-serif, 14px, weight 600, line-height 20px
+- **Padding:** \`10px 16px\`
+- **Border Radius:** \`8px\`
+- **Border:** none
+- **Box Shadow:** \`0 8px 24px rgba(0, 0, 0, 0.16)\`
+- **Hover State:** increase brightness by 6%
+- **Active State:** decrease brightness by 8%
+- **Height:** 40px minimum
+
+#### Secondary Button
+- **Background:** transparent
+- **Text Color:** \`${primary.value}\`
+- **Font:** Modern sans-serif, 14px, weight 600, line-height 20px
+- **Padding:** \`10px 16px\`
+- **Border Radius:** \`8px\`
+- **Border:** \`1px solid ${primary.value}\`
+- **Box Shadow:** none
+- **Hover State:** \`rgba(255, 255, 255, 0.06)\` on dark surfaces or \`rgba(0, 0, 0, 0.04)\` on light surfaces
+- **Height:** 40px minimum
+
+### Cards & Containers
+
+- **Hero Card:** background \`${surface.value}\`, padding \`48px\`, border radius \`12px\`, border \`1px solid rgba(255,255,255,0.10)\`.
+- **Feature Card:** background \`rgba(255,255,255,0.04)\`, padding \`24px\`, border radius \`10px\`, border \`1px solid rgba(255,255,255,0.10)\`.
+- **Label Card:** background transparent, font size 12px, line-height 16px, opacity 72%.
+- **Navigation:** height 64px, padding \`0 24px\`, background \`rgba(10, 10, 12, 0.78)\`, backdrop blur \`16px\`.
+- **Inputs:** height 44px, padding \`0 14px\`, border \`1px solid rgba(255,255,255,0.14)\`, focus ring \`0 0 0 3px rgba(110,231,249,0.18)\`.
+
+## 5. Layout Principles
+
+- **Base Unit:** 4px
+- **Container Width:** 1200px-1280px for marketing layouts, 1440px for dense dashboards
+- **Grid:** 1 column mobile, 2 columns tablet, 3 columns desktop
+- **Gutter:** 16px mobile, 24px tablet, 32px desktop
+- **Section Padding:** 64px desktop, 40px tablet, 24px mobile
+- **Card Padding:** 20px-32px depending on density
+
+## 6. Depth & Elevation
+
+| Level | Treatment | Use |
+|-------|-----------|-----|
+| Flat | \`box-shadow: none\` | Standard surfaces |
+| Subtle | \`0 1px 2px rgba(0,0,0,0.10)\` | Inline cards |
+| Medium | \`0 12px 32px rgba(0,0,0,0.18)\` | Menus and panels |
+| Deep | \`0 28px 80px rgba(0,0,0,0.28)\` | Modals and hero focus states |
+
+## 7. Do's and Don'ts
+
+### Do
+
+- Use ${primary.value} only where the user needs a clear action or selected state
+- Keep card padding between 20px and 32px
+- Use page sections with visible hierarchy and strong labels
+- Keep interactive controls at least 40px tall
+- Match screenshots, tags, and metadata to ${item.url}
+- Document every repeated component as a reusable rule
+- Use direct nouns for UI labels
+- Keep color roles tied to verified palette values
+- Use consistent border and radius values across related components
+- Write rules that an implementation agent can follow without guessing
+
+### Don't
+
+- Do not invent extra brand colors beyond the verified gallery palette
+- Do not use color alone for hierarchy
+- Do not mix unrelated corner radius values in one component family
+- Do not create vague component notes without CSS values
+- Do not use more than 3 columns for card galleries
+- Do not bury source URLs or screenshot context
+- Do not make buttons smaller than 40px tall
+- Do not create decorative shadows unless they clarify layer depth
+- Do not let typography scale randomly between sections
+- Do not omit responsive behavior
+
+## 8. Responsive Behavior
+
+| Breakpoint | Width | Key Changes |
+|------------|-------|------------|
+| Mobile | 320px-767px | Single column, 24px page padding, 40px controls |
+| Tablet | 768px-1023px | Two columns, 32px section rhythm |
+| Desktop | 1024px-1440px | Three columns, 1200px-1280px content width |
+| Large Desktop | 1441px+ | Centered max-width layout, no uncontrolled stretching |
+
+## 9. Agent Prompt Guide
+
+### Quick Color Reference
+
+- **Primary CTA:** ${primary.name} (\`${primary.value}\`)
+- **Secondary Reference:** ${secondary.name} (\`${secondary.value}\`)
+- **Surface Reference:** ${surface.name} (\`${surface.value}\`)
+- **Source URL:** ${item.href}
+
+### Iteration Guide
+
+1. Build the interface around ${item.pageTypes.join(" and ")} page patterns.
+2. Use ${primary.value} for primary interaction only.
+3. Use ${surface.value} as the main surface or background reference.
+4. Keep cards at 8px-12px radius unless the source clearly differs.
+5. Use 40px-44px minimum height for all controls.
+6. Keep section spacing between 40px and 64px.
+7. Use ${item.uiElements.slice(0, 4).join(", ")} as the first component set.
+8. Use ${item.uxPatterns.slice(0, 4).join(", ")} as the primary UX pattern references.
+9. Keep the layout responsive with 1/2/3 column behavior.
+10. Do not invent palette values outside the listed colors.
+`
+}
+
+const CURATED_GALLERY_INPUTS: CuratedGalleryInput[] = [
+  {
+    id: "curated-stripe",
+    name: "Stripe",
+    description: "Payments infrastructure, pricing, dashboard, and trust-heavy product pages",
+    url: "stripe.com",
+    href: "https://stripe.com",
+    pageTypes: ["Product Page & Landing", "Dashboard", "Pricing Page"],
+    uxPatterns: ["Product Features", "Social Proof", "Feature Comparison", "Developer Docs"],
+    uiElements: ["Navigation Bar", "Button", "Cards & Tiles", "Tabs", "Code Block", "Icon"],
+    colors: [
+      { name: "Stripe Purple", value: "#635BFF" },
+      { name: "Navy", value: "#0A2540" },
+      { name: "Cloud", value: "#F6F9FC" },
+      { name: "Slate", value: "#425466" },
+    ],
+  },
+  {
+    id: "curated-linear",
+    name: "Linear",
+    description: "Issue tracking, planning, changelog, command menu, and polished SaaS workflows",
+    url: "linear.app",
+    href: "https://linear.app",
+    pageTypes: ["Product Page & Landing", "Product Details", "Changelog"],
+    uxPatterns: ["Command Menu", "Product Features", "Testimonials", "Roadmap"],
+    uiElements: ["Cards & Tiles", "Button", "Carousel", "Navigation Bar", "Keyboard Shortcut", "Modal"],
+    colors: [
+      { name: "Linear Indigo", value: "#5E6AD2" },
+      { name: "Black", value: "#08090A" },
+      { name: "Mist", value: "#F7F8FA" },
+      { name: "Gray", value: "#8A8F98" },
+    ],
+  },
+  {
+    id: "curated-vercel",
+    name: "Vercel",
+    description: "Developer platform, deployment dashboards, docs, and enterprise conversion pages",
+    url: "vercel.com",
+    href: "https://vercel.com",
+    pageTypes: ["Product Page & Landing", "Dashboard", "Docs"],
+    uxPatterns: ["Developer Onboarding", "Product Features", "Integration Page", "Enterprise CTA"],
+    uiElements: ["Navigation Bar", "Button", "Code Block", "Tabs", "Cards & Tiles", "Status Badge"],
+    colors: [
+      { name: "Black", value: "#000000" },
+      { name: "White", value: "#FFFFFF" },
+      { name: "Gray 900", value: "#111111" },
+      { name: "Gray 500", value: "#666666" },
+    ],
+  },
+  {
+    id: "curated-apple",
+    name: "Apple",
+    description: "Consumer product storytelling, minimal commerce, hero campaigns, and product navigation",
+    url: "apple.com",
+    href: "https://apple.com",
+    pageTypes: ["Home Page", "Product Page & Landing", "Catalog Page"],
+    uxPatterns: ["Hero Campaign", "Product Features", "Navigation", "Product Comparison"],
+    uiElements: ["Navigation Bar", "Button", "Cards & Tiles", "Carousel", "Icon", "Footer"],
+    colors: [
+      { name: "Black", value: "#000000" },
+      { name: "Blue", value: "#0071E3" },
+      { name: "Cotton", value: "#F5F5F7" },
+      { name: "Gray", value: "#6E6E73" },
+    ],
+  },
+  {
+    id: "curated-openai",
+    name: "OpenAI",
+    description: "AI research, product marketing, model pages, docs, and trust-centered enterprise flows",
+    url: "openai.com",
+    href: "https://openai.com",
+    pageTypes: ["Home Page", "Product Page & Landing", "Docs"],
+    uxPatterns: ["Editorial Storytelling", "Product Features", "Research Index", "Enterprise CTA"],
+    uiElements: ["Navigation Bar", "Button", "Cards & Tiles", "Accordion & Collapse", "Footer", "Article List"],
+    colors: [
+      { name: "Near Black", value: "#0D0D0D" },
+      { name: "White", value: "#FFFFFF" },
+      { name: "Soft Gray", value: "#F4F4F4" },
+      { name: "Muted Gray", value: "#6E6E6E" },
+    ],
+  },
+  {
+    id: "curated-anthropic",
+    name: "Anthropic",
+    description: "AI model product pages, research content, safety positioning, and enterprise funnels",
+    url: "anthropic.com",
+    href: "https://anthropic.com",
+    pageTypes: ["Product Page & Landing", "Research Page", "Company Page"],
+    uxPatterns: ["Editorial Storytelling", "Feature Comparison", "Enterprise CTA", "Resource Library"],
+    uiElements: ["Navigation Bar", "Button", "Cards & Tiles", "Article Card", "Footer", "Icon"],
+    colors: [
+      { name: "Claude Orange", value: "#D97757" },
+      { name: "Ink", value: "#1F1F1F" },
+      { name: "Cream", value: "#F7F2E8" },
+      { name: "Stone", value: "#8A8178" },
+    ],
+  },
+  {
+    id: "curated-cursor",
+    name: "Cursor",
+    description: "AI code editor landing pages, install flows, feature pages, and developer conversion",
+    url: "cursor.com",
+    href: "https://cursor.com",
+    pageTypes: ["Product Page & Landing", "Download Page", "Pricing Page"],
+    uxPatterns: ["Product Features", "Code Demo", "Testimonials", "Pricing Toggle"],
+    uiElements: ["Button", "Code Block", "Cards & Tiles", "Navigation Bar", "Badge", "Video Preview"],
+    colors: [
+      { name: "Black", value: "#050505" },
+      { name: "White", value: "#FFFFFF" },
+      { name: "Blue", value: "#4C8DFF" },
+      { name: "Muted", value: "#9CA3AF" },
+    ],
+  },
+  {
+    id: "curated-figma",
+    name: "Figma",
+    description: "Collaborative design software, templates, community, product education, and signup flows",
+    url: "figma.com",
+    href: "https://figma.com",
+    pageTypes: ["Product Page & Landing", "Template Gallery", "Community Page"],
+    uxPatterns: ["Product Features", "Template Browsing", "Collaboration", "Education"],
+    uiElements: ["Navigation Bar", "Button", "Cards & Tiles", "Gallery Grid", "Tabs", "Avatar"],
+    colors: [
+      { name: "Figma Blue", value: "#1ABCFE" },
+      { name: "Figma Green", value: "#0ACF83" },
+      { name: "Figma Red", value: "#F24E1E" },
+      { name: "Black", value: "#000000" },
+    ],
+  },
+  {
+    id: "curated-notion",
+    name: "Notion",
+    description: "Workspace software, templates, product education, onboarding, and team collaboration",
+    url: "notion.so",
+    href: "https://www.notion.so",
+    pageTypes: ["Product Page & Landing", "Template Gallery", "Team Page"],
+    uxPatterns: ["Template Browsing", "Product Features", "Onboarding", "Use Case Grid"],
+    uiElements: ["Cards & Tiles", "Button", "Navigation Bar", "Search", "Icon", "Sidebar & Drawer"],
+    colors: [
+      { name: "Ink", value: "#191919" },
+      { name: "White", value: "#FFFFFF" },
+      { name: "Warm Gray", value: "#F7F6F3" },
+      { name: "Blue", value: "#2383E2" },
+    ],
+  },
+  {
+    id: "curated-airbnb",
+    name: "Airbnb",
+    description: "Marketplace search, listing pages, booking flow, filters, and trust-centered checkout",
+    url: "airbnb.com",
+    href: "https://airbnb.com",
+    pageTypes: ["Marketplace", "Search Results", "Product Details", "Checkout"],
+    uxPatterns: ["Filter & Sorting", "Map Search", "Booking Flow", "Trust Signals"],
+    uiElements: ["Search", "Cards & Tiles", "Button", "Map", "Carousel", "Calendar"],
+    colors: [
+      { name: "Raush", value: "#FF385C" },
+      { name: "Black", value: "#222222" },
+      { name: "White", value: "#FFFFFF" },
+      { name: "Gray", value: "#717171" },
+    ],
+  },
+  {
+    id: "curated-github",
+    name: "GitHub",
+    description: "Developer collaboration, repository pages, code review, docs, and enterprise workflows",
+    url: "github.com",
+    href: "https://github.com",
+    pageTypes: ["Dashboard", "Product Details", "Docs", "Profile & Account"],
+    uxPatterns: ["Code Review", "Issue Tracking", "Search", "Developer Onboarding"],
+    uiElements: ["Navigation Bar", "Button", "Tabs", "Code Block", "Table", "Badge"],
+    colors: [
+      { name: "Black", value: "#0D1117" },
+      { name: "Blue", value: "#0969DA" },
+      { name: "Canvas", value: "#FFFFFF" },
+      { name: "Gray", value: "#57606A" },
+    ],
+  },
+  {
+    id: "curated-shopify",
+    name: "Shopify",
+    description: "Commerce platform marketing, admin workflows, checkout, product catalog, and pricing",
+    url: "shopify.com",
+    href: "https://shopify.com",
+    pageTypes: ["Product Page & Landing", "Dashboard", "Pricing Page", "Checkout"],
+    uxPatterns: ["Product Features", "Pricing", "Onboarding", "Store Setup"],
+    uiElements: ["Button", "Cards & Tiles", "Navigation Bar", "Form", "List", "Status Badge"],
+    colors: [
+      { name: "Shopify Green", value: "#95BF47" },
+      { name: "Ink", value: "#002E25" },
+      { name: "Cream", value: "#F3FCF4" },
+      { name: "Gray", value: "#6B7177" },
+    ],
+  },
+  {
+    id: "curated-webflow",
+    name: "Webflow",
+    description: "Visual website builder, templates, product marketing, education, and conversion flows",
+    url: "webflow.com",
+    href: "https://webflow.com",
+    pageTypes: ["Product Page & Landing", "Template Gallery", "Pricing Page"],
+    uxPatterns: ["Product Features", "Template Browsing", "Education", "Feature Comparison"],
+    uiElements: ["Navigation Bar", "Button", "Cards & Tiles", "Carousel", "Tabs", "Video Preview"],
+    colors: [
+      { name: "Webflow Blue", value: "#146EF5" },
+      { name: "Black", value: "#080808" },
+      { name: "White", value: "#FFFFFF" },
+      { name: "Gray", value: "#6B7280" },
+    ],
+  },
+  {
+    id: "curated-ramp",
+    name: "Ramp",
+    description: "Finance platform dashboards, expense workflows, approval flows, and enterprise pages",
+    url: "ramp.com",
+    href: "https://ramp.com",
+    pageTypes: ["Product Page & Landing", "Dashboard", "Enterprise Page"],
+    uxPatterns: ["Product Features", "Stats", "Approval Flow", "Customer Proof"],
+    uiElements: ["Cards & Tiles", "Button", "Table", "Chart", "Navigation Bar", "Badge"],
+    colors: [
+      { name: "Ramp Green", value: "#00C775" },
+      { name: "Black", value: "#0A0F0D" },
+      { name: "White", value: "#FFFFFF" },
+      { name: "Mint", value: "#E6FFF4" },
+    ],
+  },
+  {
+    id: "curated-retool",
+    name: "Retool",
+    description: "Internal tools, data app dashboards, workflow builders, and developer-first demos",
+    url: "retool.com",
+    href: "https://retool.com",
+    pageTypes: ["Product Page & Landing", "Dashboard", "Integration Page"],
+    uxPatterns: ["Product Features", "Workflow Builder", "Developer Docs", "Use Case Grid"],
+    uiElements: ["Cards & Tiles", "Button", "Table", "Code Block", "Chart", "Form"],
+    colors: [
+      { name: "Retool Blue", value: "#3B82F6" },
+      { name: "Ink", value: "#0F172A" },
+      { name: "White", value: "#FFFFFF" },
+      { name: "Slate", value: "#64748B" },
+    ],
+  },
+  {
+    id: "curated-supabase",
+    name: "Supabase",
+    description: "Backend platform docs, dashboard workflows, database UI, and developer onboarding",
+    url: "supabase.com",
+    href: "https://supabase.com",
+    pageTypes: ["Product Page & Landing", "Docs", "Dashboard"],
+    uxPatterns: ["Developer Onboarding", "Product Features", "Docs Navigation", "Integration Page"],
+    uiElements: ["Navigation Bar", "Button", "Code Block", "Table", "Tabs", "Cards & Tiles"],
+    colors: [
+      { name: "Supabase Green", value: "#3ECF8E" },
+      { name: "Black", value: "#121212" },
+      { name: "White", value: "#FFFFFF" },
+      { name: "Gray", value: "#A1A1AA" },
+    ],
+  },
+  {
+    id: "curated-clerk",
+    name: "Clerk",
+    description: "Authentication components, account management, docs, pricing, and developer setup",
+    url: "clerk.com",
+    href: "https://clerk.com",
+    pageTypes: ["Product Page & Landing", "Docs", "Pricing Page", "Profile & Account"],
+    uxPatterns: ["Developer Onboarding", "Auth Flow", "Product Features", "Pricing"],
+    uiElements: ["Button", "Form", "Avatar", "Sidebar & Drawer", "Code Block", "Tabs"],
+    colors: [
+      { name: "Clerk Purple", value: "#6C47FF" },
+      { name: "Black", value: "#131316" },
+      { name: "White", value: "#FFFFFF" },
+      { name: "Lavender", value: "#F1EEFF" },
+    ],
+  },
+  {
+    id: "curated-framer",
+    name: "Framer",
+    description: "Website builder marketing, templates, animation patterns, and publishing workflows",
+    url: "framer.com",
+    href: "https://framer.com",
+    pageTypes: ["Product Page & Landing", "Template Gallery", "Pricing Page"],
+    uxPatterns: ["Template Browsing", "Animation", "Product Features", "Publishing Flow"],
+    uiElements: ["Button", "Cards & Tiles", "Carousel", "Navigation Bar", "Video Preview", "Badge"],
+    colors: [
+      { name: "Framer Blue", value: "#0099FF" },
+      { name: "Black", value: "#050505" },
+      { name: "White", value: "#FFFFFF" },
+      { name: "Gray", value: "#999999" },
+    ],
+  },
+  {
+    id: "curated-raycast",
+    name: "Raycast",
+    description: "Productivity launcher, command palette UX, extension browsing, and team workflows",
+    url: "raycast.com",
+    href: "https://raycast.com",
+    pageTypes: ["Product Page & Landing", "Catalog Page", "Team Page"],
+    uxPatterns: ["Command Menu", "Extension Browsing", "Product Features", "Team Collaboration"],
+    uiElements: ["Command Palette", "Button", "Cards & Tiles", "Search", "Icon", "List"],
+    colors: [
+      { name: "Raycast Red", value: "#FF6363" },
+      { name: "Black", value: "#050505" },
+      { name: "White", value: "#FFFFFF" },
+      { name: "Gray", value: "#8C8C8C" },
+    ],
+  },
+  {
+    id: "curated-perplexity",
+    name: "Perplexity",
+    description: "AI search, answer pages, source cards, mobile-first queries, and research workflows",
+    url: "perplexity.ai",
+    href: "https://www.perplexity.ai",
+    pageTypes: ["Home Page", "Search Results", "Product Page & Landing"],
+    uxPatterns: ["Search", "Source Cards", "Answer Feed", "Follow-up Prompts"],
+    uiElements: ["Search", "Cards & Tiles", "Button", "Tabs", "Citation", "Input"],
+    colors: [
+      { name: "Perplexity Teal", value: "#20B8CD" },
+      { name: "Ink", value: "#111827" },
+      { name: "White", value: "#FFFFFF" },
+      { name: "Mist", value: "#F3F6F8" },
+    ],
+  },
+]
+
+export const DEFAULT_GALLERY_ITEMS: GalleryItem[] = CURATED_GALLERY_INPUTS.map((item) => ({
+  ...item,
+  markdown: createCuratedMarkdown(item),
+}))
 
 export function normalizeGalleryUrl(value: string) {
   const trimmed = value.trim()

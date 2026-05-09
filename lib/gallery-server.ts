@@ -1,5 +1,6 @@
 import {
   DEFAULT_DESIGN_STRUCTURE,
+  DEFAULT_GALLERY_ITEMS,
   DESIGN_STRUCTURE_VERSION,
   LEGACY_DEFAULT_GALLERY_IDS,
   type GalleryItem,
@@ -71,6 +72,51 @@ async function ensureGalleryTables() {
       updated_at timestamp default now()
     )
   `
+
+  for (const [index, item] of DEFAULT_GALLERY_ITEMS.entries()) {
+    await sql`
+      insert into gallery_items (
+        id,
+        name,
+        description,
+        url,
+        href,
+        page_types,
+        ux_patterns,
+        ui_elements,
+        colors,
+        markdown,
+        visible,
+        sort_order
+      )
+      values (
+        ${item.id},
+        ${item.name},
+        ${item.description},
+        ${item.url},
+        ${item.href},
+        ${JSON.stringify(item.pageTypes)}::jsonb,
+        ${JSON.stringify(item.uxPatterns)}::jsonb,
+        ${JSON.stringify(item.uiElements)}::jsonb,
+        ${JSON.stringify(item.colors)}::jsonb,
+        ${item.markdown},
+        true,
+        ${index + 1000}
+      )
+      on conflict (id) do update set
+        name = excluded.name,
+        description = excluded.description,
+        url = excluded.url,
+        href = excluded.href,
+        page_types = excluded.page_types,
+        ux_patterns = excluded.ux_patterns,
+        ui_elements = excluded.ui_elements,
+        colors = excluded.colors,
+        markdown = excluded.markdown,
+        sort_order = excluded.sort_order,
+        updated_at = now()
+    `
+  }
 
   for (const id of LEGACY_DEFAULT_GALLERY_IDS) {
     await sql`
