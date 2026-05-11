@@ -19,7 +19,31 @@ export type GalleryItem = {
 export const GALLERY_STORAGE_KEY = "designmd:gallery-items"
 export const GALLERY_DELETED_DEFAULTS_KEY = "designmd:gallery-deleted-defaults"
 export const DESIGN_STRUCTURE_STORAGE_KEY = "designmd:design-structure"
-export const LEGACY_DEFAULT_GALLERY_IDS = ["stripe", "linear", "apple"]
+export const LEGACY_DEFAULT_GALLERY_IDS = [
+  "stripe",
+  "linear",
+  "apple",
+  "curated-stripe",
+  "curated-linear",
+  "curated-vercel",
+  "curated-apple",
+  "curated-openai",
+  "curated-anthropic",
+  "curated-cursor",
+  "curated-figma",
+  "curated-notion",
+  "curated-airbnb",
+  "curated-github",
+  "curated-shopify",
+  "curated-webflow",
+  "curated-ramp",
+  "curated-retool",
+  "curated-supabase",
+  "curated-clerk",
+  "curated-framer",
+  "curated-raycast",
+  "curated-perplexity",
+]
 export const DESIGN_STRUCTURE_VERSION = "apple-standard-v1"
 
 export const DEFAULT_DESIGN_STRUCTURE = `# Design System Inspired by [Website Name]
@@ -882,10 +906,7 @@ const CURATED_GALLERY_INPUTS: CuratedGalleryInput[] = [
   },
 ]
 
-export const DEFAULT_GALLERY_ITEMS: GalleryItem[] = CURATED_GALLERY_INPUTS.map((item) => ({
-  ...item,
-  markdown: createCuratedMarkdown(item),
-}))
+export const DEFAULT_GALLERY_ITEMS: GalleryItem[] = []
 
 export function normalizeGalleryUrl(value: string) {
   const trimmed = value.trim()
