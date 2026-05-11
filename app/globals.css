@@ -93,11 +93,9 @@
     background-color: #0A0A08;
     color: #F0EDE4;
     font-family: var(--font-dm-mono), 'DM Mono', monospace;
-    /* Subtle grid lines texture */
     background-image:
-      linear-gradient(rgba(240, 237, 228, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(240, 237, 228, 0.03) 1px, transparent 1px);
-    background-size: 48px 48px;
+      radial-gradient(circle at 50% -20%, rgba(232, 213, 163, 0.08), transparent 34rem),
+      linear-gradient(180deg, #0A0A08 0%, #090907 56%, #0A0A08 100%);
   }
 }
 
@@ -136,6 +134,89 @@
   outline: none;
   box-shadow: 0 0 0 1px #C8F04A, 0 0 16px rgba(200, 240, 74, 0.15);
   border-color: #C8F04A;
+}
+
+.designmd-hero-bg {
+  min-height: calc(100vh - 1px);
+  background:
+    radial-gradient(circle at 50% 18%, rgba(232, 213, 163, 0.10), transparent 28rem),
+    radial-gradient(circle at 78% 42%, rgba(200, 240, 74, 0.075), transparent 23rem),
+    linear-gradient(180deg, rgba(10, 10, 8, 0.78), rgba(10, 10, 8, 0.98));
+  isolation: isolate;
+}
+
+.designmd-hero-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, transparent 0%, rgba(240, 237, 228, 0.045) 42%, transparent 58%),
+    radial-gradient(circle at 50% 50%, transparent 0%, transparent 44%, rgba(0, 0, 0, 0.42) 100%);
+  mix-blend-mode: screen;
+  opacity: 0.9;
+}
+
+.designmd-hero-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(90deg, transparent, rgba(240, 237, 228, 0.055), transparent),
+    linear-gradient(180deg, rgba(255,255,255,0.018), transparent 28%, rgba(0,0,0,0.22));
+  background-size: 100% 1px, 100% 100%;
+  opacity: 0.58;
+}
+
+.hero-ambient-a {
+  background:
+    radial-gradient(circle, rgba(232, 213, 163, 0.16), transparent 64%),
+    radial-gradient(circle at 64% 40%, rgba(200, 240, 74, 0.13), transparent 52%);
+}
+
+.hero-ambient-b {
+  background:
+    radial-gradient(circle, rgba(122, 184, 245, 0.10), transparent 62%),
+    radial-gradient(circle at 62% 44%, rgba(232, 213, 163, 0.12), transparent 58%);
+}
+
+.hero-pointer-glow {
+  background: radial-gradient(circle, rgba(200, 240, 74, 0.12), transparent 66%);
+  filter: blur(22px);
+  opacity: 0.86;
+}
+
+.hero-scan {
+  background: linear-gradient(90deg, transparent, rgba(240, 237, 228, 0.055), rgba(200, 240, 74, 0.06), transparent);
+  transform: skewX(-18deg);
+  opacity: 0.58;
+}
+
+.hero-title-accent {
+  text-shadow:
+    0 0 28px rgba(232, 213, 163, 0.14),
+    0 18px 54px rgba(0, 0, 0, 0.34);
+}
+
+.hero-interactive-panel {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.hero-input-shell {
+  position: relative;
+}
+
+.hero-input-shell::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(120deg, rgba(240, 237, 228, 0.16), rgba(200, 240, 74, 0.30), rgba(122, 184, 245, 0.13));
+  opacity: 0.48;
+  filter: blur(10px);
 }
 
 /* Frosted glass nav */
