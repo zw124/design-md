@@ -153,9 +153,7 @@ export function GenerationResult({ url, content, isGenerating, onClose }: Genera
     <div className="fixed inset-0 z-50 flex flex-col bg-background text-foreground">
       <header className="flex h-[68px] shrink-0 items-center justify-between border-b border-border bg-background px-5 md:px-8">
         <div className="flex min-w-0 items-center gap-4">
-          <button onClick={onClose} className="grid h-10 w-10 shrink-0 place-items-center rounded-full border-2 border-foreground text-xl font-bold leading-none transition hover:bg-foreground hover:text-background">
-            R
-          </button>
+          <button onClick={onClose} aria-label="Close" className="grid h-10 w-10 shrink-0 place-items-center rounded-full border-2 border-foreground text-xl font-bold leading-none transition hover:bg-foreground hover:text-background" />
           <div className="min-w-0 truncate text-lg font-semibold md:text-2xl">
             <span className="text-muted">/</span> Styles <span className="text-muted">/</span> {hostname.replace(/^www\./, "")}
           </div>
