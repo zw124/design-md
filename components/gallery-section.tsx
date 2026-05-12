@@ -10,13 +10,150 @@ import { DEFAULT_GALLERY_ITEMS, type GalleryItem, screenshotUrl } from "@/lib/ga
 gsap.registerPlugin(ScrollTrigger)
 
 const GALLERY_ITEMS = DEFAULT_GALLERY_ITEMS.slice(0, 12)
+type ExportTab = "DESIGN.md" | "Tailwind v4" | "CSS Variables" | "Design Tokens"
+type Density = "Compact" | "Extended"
 
-function downloadMarkdown(item: GalleryItem) {
-  const blob = new Blob([item.markdown], { type: "text/markdown;charset=utf-8" })
+function slugify(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+}
+
+function tokenName(value: string) {
+  return slugify(value) || "color"
+}
+
+function compactMarkdown(markdown: string) {
+  return markdown
+    .split("\n")
+    .filter((line) => {
+      const trimmed = line.trim()
+      return trimmed.startsWith("#") || trimmed.startsWith("- **") || trimmed.startsWith("|") || trimmed.startsWith("## 1.") || trimmed.startsWith("## 2.") || trimmed.startsWith("## 3.")
+    })
+    .slice(0, 90)
+    .join("\n")
+}
+
+function buildTailwind(item: GalleryItem, density: Density) {
+  const colors = item.colors.map((color) => `  --color-${tokenName(color.name)}: ${color.value};`).join("\n")
+  const compact = `@import "tailwindcss";
+
+@theme inline {
+${colors}
+  --font-sans: var(--font-sans);
+  --radius-card: 8px;
+}`
+
+  if (density === "Compact") return compact
+
+  return `${compact}
+
+@layer components {
+  .${slugify(item.name)}-surface {
+    background: var(--color-${tokenName(item.colors[2]?.name || item.colors[0]?.name || "surface")});
+    border: 1px solid color-mix(in srgb, var(--color-${tokenName(item.colors[0]?.name || "accent")}) 18%, transparent);
+    border-radius: var(--radius-card);
+  }
+
+  .${slugify(item.name)}-button {
+    background: var(--color-${tokenName(item.colors[0]?.name || "accent")});
+    color: #ffffff;
+    min-height: 40px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+}`
+}
+
+function buildCssVariables(item: GalleryItem, density: Density) {
+  const colorVars = item.colors
+    .map((color) => `  --${tokenName(color.name)}: ${color.value};`)
+    .join("\n")
+  const base = `:root {
+${colorVars}
+  --radius-card: 8px;
+  --radius-control: 8px;
+  --space-section: 64px;
+  --space-card: 24px;
+}`
+
+  if (density === "Compact") return base
+
+  return `${base}
+
+[data-theme="${slugify(item.name)}"] {
+  color: var(--${tokenName(item.colors[1]?.name || item.colors[0]?.name || "foreground")});
+  background: var(--${tokenName(item.colors[2]?.name || item.colors[0]?.name || "background")});
+}
+
+.card {
+  border-radius: var(--radius-card);
+  padding: var(--space-card);
+}
+
+.section {
+  padding-block: var(--space-section);
+}`
+}
+
+function buildDesignTokens(item: GalleryItem, density: Density) {
+  const tokens = {
+    name: item.name,
+    source: item.href,
+    colors: Object.fromEntries(
+      item.colors.map((color) => [
+        tokenName(color.name),
+        {
+          value: color.value,
+          type: "color",
+          description: `Verified gallery palette color for ${item.name}.`,
+        },
+      ]),
+    ),
+    typography: {
+      display: { value: "48px/56px modern sans-serif", type: "typography" },
+      heading: { value: "32px/40px modern sans-serif", type: "typography" },
+      body: { value: "16px/24px modern sans-serif", type: "typography" },
+    },
+    spacing: {
+      section: { value: "64px", type: "dimension" },
+      card: { value: "24px", type: "dimension" },
+      control: { value: "40px", type: "dimension" },
+    },
+    radius: {
+      card: { value: "8px", type: "dimension" },
+      control: { value: "8px", type: "dimension" },
+    },
+  }
+
+  if (density === "Compact") {
+    return `// Design Tokens: compact color package for ${item.name}
+${JSON.stringify({ name: tokens.name, source: tokens.source, colors: tokens.colors }, null, 2)}`
+  }
+
+  return `// Design Tokens: full package for ${item.name}
+${JSON.stringify(tokens, null, 2)}`
+}
+
+function getExportContent(item: GalleryItem, tab: ExportTab, density: Density) {
+  if (tab === "Tailwind v4") return buildTailwind(item, density)
+  if (tab === "CSS Variables") return buildCssVariables(item, density)
+  if (tab === "Design Tokens") return buildDesignTokens(item, density)
+  return density === "Compact" ? compactMarkdown(item.markdown) : item.markdown
+}
+
+function extensionFor(tab: ExportTab) {
+  if (tab === "Design Tokens") return "json"
+  if (tab === "DESIGN.md") return "md"
+  return "css"
+}
+
+function downloadExport(item: GalleryItem, tab: ExportTab, density: Density) {
+  const content = getExportContent(item, tab, density)
+  const blob = new Blob([content], { type: "text/plain;charset=utf-8" })
   const objectUrl = URL.createObjectURL(blob)
   const anchor = document.createElement("a")
   anchor.href = objectUrl
-  anchor.download = `${item.url.replace(/[^a-z0-9]+/gi, "-")}.design.md`
+  anchor.download = `${slugify(item.url)}.${slugify(tab)}.${extensionFor(tab)}`
   document.body.appendChild(anchor)
   anchor.click()
   anchor.remove()
@@ -24,40 +161,81 @@ function downloadMarkdown(item: GalleryItem) {
 }
 
 function MarkdownPane({ item }: { item: GalleryItem }) {
+  const [activeTab, setActiveTab] = useState<ExportTab>("DESIGN.md")
+  const [density, setDensity] = useState<Density>("Extended")
+  const content = getExportContent(item, activeTab, density)
+
   return (
-    <aside className="min-h-0 border-l border-border bg-[#10131A]">
+    <aside className="h-full min-h-0 border-l border-border bg-[#10131A]">
       <div className="flex h-full min-h-0 flex-col">
         <div className="flex h-16 shrink-0 items-center gap-8 overflow-x-auto border-b border-border px-6 text-sm font-semibold">
-          <span className="shrink-0 border-b border-foreground py-5 text-foreground">DESIGN.md</span>
-          <span className="shrink-0 py-5 text-muted">Tailwind v4</span>
-          <span className="shrink-0 py-5 text-muted">CSS Variables</span>
-          <span className="shrink-0 py-5 text-muted">Design Tokens</span>
+          {(["DESIGN.md", "Tailwind v4", "CSS Variables", "Design Tokens"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`relative shrink-0 py-5 transition ${activeTab === tab ? "text-foreground" : "text-muted hover:text-foreground"}`}
+            >
+              {tab}
+              {activeTab === tab && (
+                <motion.span
+                  layoutId="gallery-export-tab"
+                  className="absolute inset-x-0 bottom-0 h-px bg-foreground"
+                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                />
+              )}
+            </button>
+          ))}
         </div>
         <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-6">
           <div className="flex gap-8 text-sm">
-            <span className="text-muted">Compact</span>
-            <span className="border-b-2 border-foreground pb-4 text-foreground">Extended</span>
+            {(["Compact", "Extended"] as const).map((option) => (
+              <button
+                key={option}
+                onClick={() => setDensity(option)}
+                className={`relative pb-4 transition ${density === option ? "text-foreground" : "text-muted hover:text-foreground"}`}
+              >
+                {option}
+                {density === option && (
+                  <motion.span
+                    layoutId="gallery-density-tab"
+                    className="absolute inset-x-0 bottom-0 h-0.5 bg-foreground"
+                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                  />
+                )}
+              </button>
+            ))}
           </div>
           <div className="flex gap-2">
             <button
-              onClick={() => navigator.clipboard.writeText(item.markdown)}
+              onClick={() => navigator.clipboard.writeText(content)}
               className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm text-foreground transition hover:bg-surface"
             >
               <Copy className="h-4 w-4" />
               Copy
             </button>
             <button
-              onClick={() => downloadMarkdown(item)}
+              onClick={() => downloadExport(item, activeTab, density)}
               className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm text-foreground transition hover:bg-surface"
             >
               <Download className="h-4 w-4" />
-              .md
+              .{extensionFor(activeTab)}
             </button>
           </div>
         </div>
-        <pre className="min-h-0 flex-1 overflow-auto whitespace-pre-wrap px-6 py-6 font-mono text-sm leading-7 text-[#D8DDE8]">
-          {item.markdown}
-        </pre>
+        <div className="min-h-0 flex-1 overflow-hidden">
+          <AnimatePresence mode="wait">
+            <motion.pre
+              key={`${activeTab}-${density}`}
+              initial={{ opacity: 0, y: 16, filter: "blur(8px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, y: -10, filter: "blur(6px)" }}
+              transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
+              className="h-full overflow-y-auto whitespace-pre-wrap px-6 py-6 font-mono text-sm leading-7 text-[#D8DDE8] overscroll-contain"
+            >
+              {content}
+            </motion.pre>
+          </AnimatePresence>
+        </div>
       </div>
     </aside>
   )
@@ -77,9 +255,9 @@ function GalleryDetail({ item, onClose }: { item: GalleryItem; onClose: () => vo
     >
       <header className="flex h-[68px] shrink-0 items-center justify-between border-b border-border bg-background px-5 md:px-8">
         <div className="flex min-w-0 items-center gap-4">
-          <button onClick={onClose} className="grid h-10 w-10 shrink-0 place-items-center rounded-full border-2 border-foreground text-xl font-bold leading-none transition hover:bg-foreground hover:text-background">
-            R
-          </button>
+          <span className="shrink-0 font-display text-2xl font-bold tracking-tight text-foreground">
+            Parallect
+          </span>
           <div className="min-w-0 truncate text-lg font-semibold md:text-2xl">
             <span className="text-muted">/</span> Styles <span className="text-muted">/</span> {item.name}
           </div>
@@ -98,9 +276,20 @@ function GalleryDetail({ item, onClose }: { item: GalleryItem; onClose: () => vo
           className="min-h-0 overflow-y-auto border-r border-border bg-background"
         >
           <div className="space-y-14 p-6 md:p-9">
-            <section>
+            <motion.section
+              initial={{ y: 34, opacity: 0, filter: "blur(10px)" }}
+              animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+              transition={{ duration: 0.58, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
+            >
               <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-[0_28px_90px_rgba(0,0,0,0.28)]">
-                <img src={screenshotUrl(item.href)} alt={`${item.name} website screenshot`} className="aspect-[16/10] w-full object-cover object-top" />
+                <motion.img
+                  src={screenshotUrl(item.href)}
+                  alt={`${item.name} website screenshot`}
+                  className="aspect-[16/10] w-full object-cover object-top"
+                  initial={{ scale: 1.08 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                />
               </div>
               <div className="mt-8 flex items-start justify-between gap-6">
                 <div>
@@ -111,24 +300,32 @@ function GalleryDetail({ item, onClose }: { item: GalleryItem; onClose: () => vo
                   <ExternalLink className="h-5 w-5" />
                 </a>
               </div>
-            </section>
+            </motion.section>
 
-            <section>
+            <motion.section
+              initial={{ y: 34, opacity: 0, filter: "blur(10px)" }}
+              animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+              transition={{ duration: 0.58, ease: [0.22, 1, 0.36, 1], delay: 0.16 }}
+            >
               <h2 className="mb-7 text-2xl font-semibold">Color Palette</h2>
               <p className="mb-5 font-mono text-sm uppercase tracking-[0.18em] text-muted">Brand</p>
               <div className="grid gap-x-6 gap-y-8 sm:grid-cols-3">
                 {item.colors.slice(0, 6).map((color) => (
-                  <div key={`${color.name}-${color.value}`}>
-                    <div className="h-28 rounded-xl border border-border" style={{ backgroundColor: color.value }} />
+                  <motion.div key={`${color.name}-${color.value}`} whileHover={{ y: -6, scale: 1.015 }} transition={{ type: "spring", stiffness: 360, damping: 28 }}>
+                    <motion.div className="h-28 rounded-xl border border-border" style={{ backgroundColor: color.value }} whileTap={{ scale: 0.98 }} />
                     <h3 className="mt-4 text-lg font-semibold">{color.name}</h3>
                     <p className="font-mono text-sm text-muted">{color.value}</p>
                     <p className="mt-3 text-sm leading-6 text-muted">Verified gallery palette color for {item.name}.</p>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
-            </section>
+            </motion.section>
 
-            <section>
+            <motion.section
+              initial={{ y: 34, opacity: 0, filter: "blur(10px)" }}
+              animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+              transition={{ duration: 0.58, ease: [0.22, 1, 0.36, 1], delay: 0.24 }}
+            >
               <h2 className="mb-7 text-2xl font-semibold">Typography</h2>
               <div className="overflow-hidden rounded-xl border border-border">
                 {[
@@ -145,9 +342,13 @@ function GalleryDetail({ item, onClose }: { item: GalleryItem; onClose: () => vo
                   </div>
                 ))}
               </div>
-            </section>
+            </motion.section>
 
-            <section>
+            <motion.section
+              initial={{ y: 34, opacity: 0, filter: "blur(10px)" }}
+              animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+              transition={{ duration: 0.58, ease: [0.22, 1, 0.36, 1], delay: 0.32 }}
+            >
               <h2 className="mb-7 text-2xl font-semibold">Spacing & Shape</h2>
               <div className="overflow-hidden rounded-xl border border-border">
                 {[
@@ -163,9 +364,13 @@ function GalleryDetail({ item, onClose }: { item: GalleryItem; onClose: () => vo
                   </div>
                 ))}
               </div>
-            </section>
+            </motion.section>
 
-            <section>
+            <motion.section
+              initial={{ y: 34, opacity: 0, filter: "blur(10px)" }}
+              animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+              transition={{ duration: 0.58, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
+            >
               <h2 className="mb-7 text-2xl font-semibold">Guidelines</h2>
               <div className="space-y-4 text-base leading-8 text-[#D8DDE8]">
                 {[
@@ -181,7 +386,7 @@ function GalleryDetail({ item, onClose }: { item: GalleryItem; onClose: () => vo
                   </p>
                 ))}
               </div>
-            </section>
+            </motion.section>
           </div>
         </motion.section>
 
@@ -190,7 +395,7 @@ function GalleryDetail({ item, onClose }: { item: GalleryItem; onClose: () => vo
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: 24, opacity: 0 }}
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.06 }}
-          className="min-h-0"
+          className="h-full min-h-0"
         >
           <MarkdownPane item={item} />
         </motion.div>

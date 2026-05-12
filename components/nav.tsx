@@ -36,6 +36,12 @@ export function Nav() {
         {/* Right nav */}
         <div className="flex items-center gap-2">
           <Link
+            href="/parallect"
+            className="px-3 py-1.5 text-sm text-muted hover:text-foreground transition-colors"
+          >
+            Parallect
+          </Link>
+          <Link
             href="/#generator"
             className="px-3 py-1.5 text-sm text-muted hover:text-foreground transition-colors"
           >
