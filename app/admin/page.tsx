@@ -254,7 +254,7 @@ export default function AdminPage() {
             />
             <button
               onClick={login}
-              className="mt-4 h-12 w-full rounded bg-accent px-4 text-sm font-semibold text-[#1A1410] transition hover:bg-accent-muted"
+              className="mt-4 h-12 w-full rounded bg-accent px-4 text-sm font-semibold text-[#080A0F] transition hover:bg-accent-muted"
             >
               Login
             </button>
@@ -428,7 +428,7 @@ export default function AdminPage() {
                     </button>
                     <button
                       onClick={downloadStructure}
-                      className="rounded bg-accent px-3 py-2 text-xs font-semibold text-[#1A1410] transition hover:bg-accent-muted"
+                      className="rounded bg-accent px-3 py-2 text-xs font-semibold text-[#080A0F] transition hover:bg-accent-muted"
                       type="button"
                     >
                       Download
@@ -445,7 +445,7 @@ export default function AdminPage() {
 
               <button
                 onClick={upload}
-                className="inline-flex h-12 w-fit items-center gap-3 rounded bg-accent px-5 text-sm font-semibold text-[#1A1410] transition hover:bg-accent-muted"
+                className="inline-flex h-12 w-fit items-center gap-3 rounded bg-accent px-5 text-sm font-semibold text-[#080A0F] transition hover:bg-accent-muted"
               >
                 <Save className="h-4 w-4" />
                 Upload to Gallery

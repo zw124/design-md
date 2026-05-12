@@ -372,7 +372,7 @@ function renderMarkdown(text: string) {
     if (line.startsWith("## ")) return <div key={i} className="syntax-h2 mt-5 mb-2">{line.slice(3)}</div>
     if (line.startsWith("### ")) return <div key={i} className="syntax-h3 mt-4 mb-1">{line.slice(4)}</div>
     if (line.startsWith("---")) return <hr key={i} className="border-border my-4" />
-    if (line.startsWith("| ")) return <div key={i} className="syntax-table text-[#F0EDE4]/70">{line}</div>
+    if (line.startsWith("| ")) return <div key={i} className="syntax-table text-[#F5F7FB]/70">{line}</div>
     if (line.startsWith("```")) return <div key={i} className="text-[#C084FC] text-xs font-mono">{line}</div>
     if (line.match(/`[^`]+`/)) {
       const parts = line.split(/(`[^`]+`)/)
@@ -462,7 +462,7 @@ export default function ResultPage() {
           </button>
           <button
             onClick={handleDownload}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-accent text-[#1A1410] rounded hover:bg-accent-muted transition-all duration-150 font-mono"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-accent text-[#080A0F] rounded hover:bg-accent-muted transition-all duration-150 font-mono"
           >
             <Download className="w-3 h-3" />
             Download

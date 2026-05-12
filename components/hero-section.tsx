@@ -30,7 +30,7 @@ const TRUST_WORDMARKS = [
 
 function TrustWordmark({ icon, label }: { icon: string; label: string }) {
   return (
-    <span className="inline-flex h-12 w-[190px] shrink-0 items-center justify-center gap-3 text-[#F0EDE4]">
+    <span className="inline-flex h-12 w-[190px] shrink-0 items-center justify-center gap-3 text-[#F5F7FB]">
       <span className="grid h-6 w-6 shrink-0 place-items-center">
         <img src={icon} alt="" aria-hidden="true" className="h-5 w-5 object-contain" />
       </span>
@@ -269,7 +269,7 @@ export function HeroSection() {
             <button
               onClick={() => handleGenerate()}
               disabled={loading || !isLoaded}
-              className="px-5 py-2.5 text-sm font-medium bg-accent text-[#1A1410] rounded hover:bg-accent-muted transition-all duration-150 hover:scale-[1.02] disabled:opacity-50 disabled:scale-100 whitespace-nowrap"
+              className="px-5 py-2.5 text-sm font-medium bg-accent text-[#080A0F] rounded hover:bg-accent-muted transition-all duration-150 hover:scale-[1.02] disabled:opacity-50 disabled:scale-100 whitespace-nowrap"
             >
               {loading ? "Generating..." : "Generate →"}
             </button>
@@ -303,9 +303,21 @@ export function HeroSection() {
           </div>
         </div>
 
-        <div className="animate-fade-up-4 relative mt-12 mb-12 overflow-hidden py-4">
-          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-[#1A1410] via-[#1A1410] to-transparent" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-[#1A1410] via-[#1A1410] to-transparent" />
+        {/* Loading bar + status */}
+        {loading && (
+          <div className="mt-10 max-w-2xl mx-auto">
+            <div className="h-0.5 bg-border rounded-full overflow-hidden mb-3">
+              <div className="h-full bg-accent animate-loading-bar rounded-full" />
+            </div>
+            <p className="text-xs text-muted font-mono text-center">
+              {STATUS_STEPS[statusIndex]}
+            </p>
+          </div>
+        )}
+
+        <div className="animate-fade-up-4 relative mt-10 mb-12 overflow-hidden py-4">
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-[#080A0F] via-[#080A0F] to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-[#080A0F] via-[#080A0F] to-transparent" />
           <div className="trust-marquee relative h-12 overflow-hidden">
             <div data-trust-track className="trust-marquee-track flex w-max items-center">
               {[...TRUST_WORDMARKS, ...TRUST_WORDMARKS].map((item, index) => (
@@ -315,17 +327,6 @@ export function HeroSection() {
           </div>
         </div>
 
-        {/* Loading bar + status */}
-        {loading && (
-          <div className="mt-8 max-w-2xl mx-auto">
-            <div className="h-0.5 bg-border rounded-full overflow-hidden mb-3">
-              <div className="h-full bg-accent animate-loading-bar rounded-full" />
-            </div>
-            <p className="text-xs text-muted font-mono text-center">
-              {STATUS_STEPS[statusIndex]}
-            </p>
-          </div>
-        )}
       </div>
     </section>
 

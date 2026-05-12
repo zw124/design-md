@@ -61,7 +61,7 @@ export function Nav() {
                   className="size-6 rounded-full"
                 />
               ) : (
-                <span className="size-6 rounded-full bg-accent text-[#1A1410] grid place-items-center text-xs font-bold">
+                <span className="size-6 rounded-full bg-accent text-[#080A0F] grid place-items-center text-xs font-bold">
                   {(session?.user?.name || session?.user?.email || "U").slice(0, 1)}
                 </span>
               )}

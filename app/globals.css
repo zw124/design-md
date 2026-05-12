@@ -13,31 +13,31 @@
 
 :root {
   /* DESIGN.MD design tokens */
-  --background: #1A1410;
-  --surface: #111110;
-  --border: #222220;
+  --background: #080A0F;
+  --surface: #0D1016;
+  --border: #1B2230;
   --accent: #C8F04A;
   --accent-muted: #a8cc36;
-  --foreground: #F0EDE4;
-  --muted: #6B6860;
-  --warm: #E8D5A3;
+  --foreground: #F5F7FB;
+  --muted: #8B93A7;
+  --warm: #DDE7FF;
 
   /* shadcn token mappings */
-  --card: #111110;
-  --card-foreground: #F0EDE4;
-  --popover: #111110;
-  --popover-foreground: #F0EDE4;
+  --card: #0D1016;
+  --card-foreground: #F5F7FB;
+  --popover: #0D1016;
+  --popover-foreground: #F5F7FB;
   --primary: #C8F04A;
-  --primary-foreground: #1A1410;
-  --secondary: #222220;
-  --secondary-foreground: #F0EDE4;
-  --muted-color: #222220;
-  --muted-foreground: #6B6860;
-  --accent-color: #222220;
-  --accent-foreground: #F0EDE4;
+  --primary-foreground: #080A0F;
+  --secondary: #1B2230;
+  --secondary-foreground: #F5F7FB;
+  --muted-color: #1B2230;
+  --muted-foreground: #8B93A7;
+  --accent-color: #1B2230;
+  --accent-foreground: #F5F7FB;
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);
-  --input: #222220;
+  --input: #1B2230;
   --ring: #C8F04A;
   --radius: 0.5rem;
 }
@@ -86,12 +86,12 @@
   }
 
   html {
-    background-color: #1A1410;
+    background-color: #080A0F;
   }
 
   body {
-    background-color: #1A1410;
-    color: #F0EDE4;
+    background-color: #080A0F;
+    color: #F5F7FB;
     font-family: var(--font-dm-mono), 'DM Mono', monospace;
     background-image: none;
   }
@@ -103,14 +103,14 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #1A1410;
+  background: #080A0F;
 }
 ::-webkit-scrollbar-thumb {
-  background: #222220;
+  background: #1B2230;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #6B6860;
+  background: #8B93A7;
 }
 
 /* Fraunces display utility */
@@ -136,20 +136,20 @@
 
 /* Frosted glass nav */
 .nav-glass {
-  background: rgba(26, 20, 16, 0.84);
+  background: rgba(8, 10, 15, 0.86);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(34, 34, 32, 0.8);
+  border-bottom: 1px solid rgba(27, 34, 48, 0.9);
 }
 
 /* Syntax highlight colors for output */
 .syntax-h1 { color: #C8F04A; font-family: var(--font-fraunces), serif; font-size: 1.25rem; font-weight: 700; }
-.syntax-h2 { color: #E8D5A3; font-family: var(--font-fraunces), serif; font-size: 1.1rem; font-weight: 600; }
+.syntax-h2 { color: #DDE7FF; font-family: var(--font-fraunces), serif; font-size: 1.1rem; font-weight: 600; }
 .syntax-h3 { color: #7AB8F5; font-size: 0.95rem; font-weight: 600; }
 .syntax-code { color: #C084FC; font-family: var(--font-dm-mono), monospace; font-size: 0.85rem; }
 .syntax-table { font-family: var(--font-dm-mono), monospace; font-size: 0.8rem; }
-.syntax-text { color: #F0EDE4; font-size: 0.875rem; line-height: 1.6; }
-.syntax-muted { color: #6B6860; font-size: 0.8rem; }
+.syntax-text { color: #F5F7FB; font-size: 0.875rem; line-height: 1.6; }
+.syntax-muted { color: #8B93A7; font-size: 0.8rem; }
 
 /* Animate pulsing dot */
 @keyframes pulse-dot {
