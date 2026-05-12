@@ -152,11 +152,8 @@ export function GenerationResult({ url, content, isGenerating, onClose }: Genera
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background text-foreground">
       <header className="flex h-[68px] shrink-0 items-center justify-between border-b border-border bg-background px-5 md:px-8">
-        <div className="flex min-w-0 items-center gap-4">
-          <button onClick={onClose} aria-label="Close" className="grid h-10 w-10 shrink-0 place-items-center rounded-full border-2 border-foreground text-xl font-bold leading-none transition hover:bg-foreground hover:text-background" />
-          <div className="min-w-0 truncate text-lg font-semibold md:text-2xl">
-            <span className="text-muted">/</span> Styles <span className="text-muted">/</span> {hostname.replace(/^www\./, "")}
-          </div>
+        <div className="min-w-0 truncate text-lg font-semibold md:text-2xl">
+          Styles {hostname.replace(/^www\./, "")}
         </div>
         <a href={normalizedUrl} target="_blank" rel="noreferrer" className="hidden items-center gap-2 rounded border border-border px-3 py-2 text-xs text-muted transition hover:text-foreground md:inline-flex">
           Visit site
