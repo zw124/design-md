@@ -15,9 +15,6 @@ export function Footer() {
           © 2026 DESIGN.MD by Parallect — Built for people who care about design systems
         </p>
         <div className="flex flex-wrap items-center justify-center gap-5">
-          <Link href="/gallery" className="text-xs text-muted hover:text-foreground transition-colors font-mono">
-            Gallery
-          </Link>
           <Link href="/#generator" className="text-xs text-muted hover:text-foreground transition-colors font-mono">
             Generator
           </Link>

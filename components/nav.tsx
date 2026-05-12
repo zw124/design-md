@@ -36,12 +36,6 @@ export function Nav() {
         {/* Right nav */}
         <div className="flex items-center gap-2">
           <Link
-            href="/gallery"
-            className="px-3 py-1.5 text-sm text-muted hover:text-foreground transition-colors"
-          >
-            Gallery
-          </Link>
-          <Link
             href="/#generator"
             className="px-3 py-1.5 text-sm text-muted hover:text-foreground transition-colors"
           >
@@ -67,7 +61,7 @@ export function Nav() {
                   className="size-6 rounded-full"
                 />
               ) : (
-                <span className="size-6 rounded-full bg-accent text-[#0A0A08] grid place-items-center text-xs font-bold">
+                <span className="size-6 rounded-full bg-accent text-[#1A1410] grid place-items-center text-xs font-bold">
                   {(session?.user?.name || session?.user?.email || "U").slice(0, 1)}
                 </span>
               )}

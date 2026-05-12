@@ -906,7 +906,18 @@ const CURATED_GALLERY_INPUTS: CuratedGalleryInput[] = [
   },
 ]
 
-export const DEFAULT_GALLERY_ITEMS: GalleryItem[] = []
+export const DEFAULT_GALLERY_ITEMS: GalleryItem[] = CURATED_GALLERY_INPUTS.slice(0, 12).map((item) => {
+  const galleryItem = {
+    ...item,
+    id: item.id.replace("curated-", "showcase-"),
+    markdown: "",
+  }
+
+  return {
+    ...galleryItem,
+    markdown: createCuratedMarkdown(galleryItem),
+  }
+})
 
 export function normalizeGalleryUrl(value: string) {
   const trimmed = value.trim()

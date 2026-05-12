@@ -13,7 +13,7 @@
 
 :root {
   /* DESIGN.MD design tokens */
-  --background: #0A0A08;
+  --background: #1A1410;
   --surface: #111110;
   --border: #222220;
   --accent: #C8F04A;
@@ -28,7 +28,7 @@
   --popover: #111110;
   --popover-foreground: #F0EDE4;
   --primary: #C8F04A;
-  --primary-foreground: #0A0A08;
+  --primary-foreground: #1A1410;
   --secondary: #222220;
   --secondary-foreground: #F0EDE4;
   --muted-color: #222220;
@@ -86,18 +86,14 @@
   }
 
   html {
-    background-color: #0A0A08;
+    background-color: #1A1410;
   }
 
   body {
-    background-color: #0A0A08;
+    background-color: #1A1410;
     color: #F0EDE4;
     font-family: var(--font-dm-mono), 'DM Mono', monospace;
-    /* Subtle grid lines texture */
-    background-image:
-      linear-gradient(rgba(240, 237, 228, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(240, 237, 228, 0.03) 1px, transparent 1px);
-    background-size: 48px 48px;
+    background-image: none;
   }
 }
 
@@ -107,7 +103,7 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0A0A08;
+  background: #1A1410;
 }
 ::-webkit-scrollbar-thumb {
   background: #222220;
@@ -140,7 +136,7 @@
 
 /* Frosted glass nav */
 .nav-glass {
-  background: rgba(10, 10, 8, 0.8);
+  background: rgba(26, 20, 16, 0.84);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(34, 34, 32, 0.8);

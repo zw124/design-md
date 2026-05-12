@@ -462,7 +462,7 @@ export default function ResultPage() {
           </button>
           <button
             onClick={handleDownload}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-accent text-[#0A0A08] rounded hover:bg-accent-muted transition-all duration-150 font-mono"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-accent text-[#1A1410] rounded hover:bg-accent-muted transition-all duration-150 font-mono"
           >
             <Download className="w-3 h-3" />
             Download

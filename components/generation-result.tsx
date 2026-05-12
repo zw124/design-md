@@ -304,9 +304,9 @@ export function GenerationResult({ url, content, isGenerating, onClose, colorPay
   }
   
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[#0A0A08] animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-50 flex flex-col bg-[#1A1410] animate-in fade-in duration-300">
       {/* Top Bar */}
-      <header className="h-[48px] flex items-center justify-between px-4 border-b border-[#222220] bg-[#0A0A08] shrink-0">
+      <header className="h-[48px] flex items-center justify-between px-4 border-b border-[#222220] bg-[#1A1410] shrink-0">
         <div className="flex items-center gap-4">
           <span className="font-display font-bold text-lg text-foreground">DESIGN<span className="text-accent">.MD</span></span>
           <button 
@@ -337,7 +337,7 @@ export function GenerationResult({ url, content, isGenerating, onClose, colorPay
           <button
             onClick={downloadMarkdown}
             disabled={!visibleOutput}
-            className="text-xs font-medium bg-accent text-[#0A0A08] px-3 py-1.5 rounded hover:bg-accent-muted transition-colors lime-glow-sm disabled:opacity-50"
+            className="text-xs font-medium bg-accent text-[#1A1410] px-3 py-1.5 rounded hover:bg-accent-muted transition-colors lime-glow-sm disabled:opacity-50"
           >
             Download
           </button>
@@ -414,7 +414,7 @@ export function GenerationResult({ url, content, isGenerating, onClose, colorPay
 
         {/* Right Panel (45%) */}
         <div
-          className="w-full md:w-[45%] min-h-0 flex flex-col bg-[#0A0A08] animate-in slide-in-from-right-4 duration-300 md:h-full"
+          className="w-full md:w-[45%] min-h-0 flex flex-col bg-[#1A1410] animate-in slide-in-from-right-4 duration-300 md:h-full"
           onMouseLeave={() => setHoverFocus(null)}
         >
           
