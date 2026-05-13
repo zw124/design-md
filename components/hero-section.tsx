@@ -257,12 +257,6 @@ export function HeroSection() {
     <section ref={sectionRef} id="generator" className="relative pt-32 pb-24 px-6">
       <div data-hero-content className="max-w-3xl mx-auto text-center">
 
-        {/* Eyebrow pill */}
-        <div data-hero-reveal className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-surface text-sm text-muted mb-8">
-          <span className="w-2 h-2 rounded-full bg-accent animate-pulse-dot" />
-          <span>Generate source-backed DESIGN.md files</span>
-        </div>
-
         {/* H1 */}
         <h1 data-hero-reveal data-hero-title className="font-display text-5xl md:text-6xl font-bold text-foreground leading-tight mb-6 text-balance">
           Turn any website into{" "}
@@ -277,7 +271,9 @@ export function HeroSection() {
 
         {/* Input bar */}
         <div data-hero-reveal data-hero-form data-hero-orbit>
-          <div className="flex gap-2 p-1.5 rounded-lg border border-border bg-surface max-w-2xl mx-auto mb-4 shadow-[0_28px_90px_rgba(0,0,0,0.18)]">
+          <div className="group relative max-w-2xl mx-auto mb-4">
+            <div className="pointer-events-none absolute -inset-px rounded-lg bg-[linear-gradient(90deg,rgba(200,240,74,0.0),rgba(200,240,74,0.34),rgba(122,184,245,0.22),rgba(200,240,74,0.0))] opacity-0 blur-sm transition duration-500 group-focus-within:opacity-100" />
+            <div className="relative flex gap-2 p-1.5 rounded-lg border border-border bg-surface shadow-[0_28px_90px_rgba(0,0,0,0.18)] transition duration-300 group-focus-within:border-accent/70 group-focus-within:shadow-[0_30px_110px_rgba(200,240,74,0.08)]">
             <input
               type="url"
               value={url}
@@ -293,6 +289,7 @@ export function HeroSection() {
             >
               {loading ? "Generating..." : "Generate →"}
             </button>
+            </div>
           </div>
           {!isSignedIn && usageCount < FREE_GENERATION_LIMIT && (
             <p className="mb-4 text-xs text-muted font-mono">
@@ -311,11 +308,13 @@ export function HeroSection() {
           {/* Quick tries */}
           <div className="flex items-center justify-center gap-2 flex-wrap">
             <span className="text-xs text-muted">Try:</span>
-            {QUICK_TRIES.map((site) => (
+            {QUICK_TRIES.map((site, index) => (
               <button
                 key={site}
                 onClick={() => handleGenerate(site)}
-                className="text-xs px-2.5 py-1 rounded border border-border text-muted hover:text-foreground hover:border-[#444442] transition-all"
+                data-hero-chip
+                style={{ transitionDelay: `${index * 35}ms` }}
+                className="text-xs px-2.5 py-1 rounded border border-border text-muted hover:text-foreground hover:border-accent/60 hover:-translate-y-0.5 transition-all"
               >
                 {site}
               </button>
