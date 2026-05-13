@@ -1,7 +1,7 @@
 "use client"
 
-import { useMemo } from "react"
-import { motion } from "framer-motion"
+import { useMemo, useState } from "react"
+import { AnimatePresence, motion } from "framer-motion"
 import { Copy, Download, ExternalLink } from "lucide-react"
 
 interface GenerationResultProps {
@@ -10,6 +10,140 @@ interface GenerationResultProps {
   isGenerating?: boolean
   colorPayload?: unknown
   onClose: () => void
+}
+
+type ExportTab = "DESIGN.md" | "Tailwind v4" | "CSS Variables" | "Design Tokens"
+type Density = "Compact" | "Extended"
+
+function slugify(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+}
+
+function compactMarkdown(markdown: string) {
+  return markdown
+    .split("\n")
+    .filter((line) => {
+      const trimmed = line.trim()
+      return trimmed.startsWith("#") || trimmed.startsWith("- **") || trimmed.startsWith("|") || trimmed.startsWith("## 1.") || trimmed.startsWith("## 2.") || trimmed.startsWith("## 3.")
+    })
+    .slice(0, 90)
+    .join("\n")
+}
+
+function colorTokenRows(markdown: string) {
+  const matches = [...markdown.matchAll(/#(?:[0-9a-fA-F]{3}){1,2}/g)].map((match) => match[0].toUpperCase())
+  return Array.from(new Set(matches)).slice(0, 10)
+}
+
+function buildTailwind(hostname: string, markdown: string, density: Density) {
+  const colors = colorTokenRows(markdown)
+  const colorLines = colors.length
+    ? colors.map((color, index) => `  --color-site-${index + 1}: ${color};`).join("\n")
+    : "  --color-site-1: #7AB8F5;\n  --color-site-2: #C8F04A;\n  --color-surface: #0D1016;"
+  const compact = `@import "tailwindcss";
+
+@theme inline {
+${colorLines}
+  --font-sans: var(--font-sans);
+  --radius-card: 8px;
+}`
+
+  if (density === "Compact") return compact
+
+  return `${compact}
+
+@layer components {
+  .${slugify(hostname)}-surface {
+    background: var(--color-surface, #0D1016);
+    border: 1px solid color-mix(in srgb, var(--color-site-1) 18%, transparent);
+    border-radius: var(--radius-card);
+  }
+
+  .${slugify(hostname)}-button {
+    background: var(--color-site-1);
+    color: #080A0F;
+    min-height: 40px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+}`
+}
+
+function buildCssVariables(hostname: string, markdown: string, density: Density) {
+  const colors = colorTokenRows(markdown)
+  const colorLines = colors.length
+    ? colors.map((color, index) => `  --site-color-${index + 1}: ${color};`).join("\n")
+    : "  --site-color-1: #7AB8F5;\n  --site-color-2: #C8F04A;\n  --site-surface: #0D1016;"
+  const base = `:root {
+${colorLines}
+  --site-radius-card: 8px;
+  --site-radius-control: 8px;
+  --site-space-section: 64px;
+  --site-space-card: 24px;
+}`
+
+  if (density === "Compact") return base
+
+  return `${base}
+
+[data-source="${slugify(hostname)}"] {
+  color: var(--site-color-1);
+  background: var(--site-surface, #0D1016);
+}
+
+.site-card {
+  border-radius: var(--site-radius-card);
+  padding: var(--site-space-card);
+}
+
+.site-section {
+  padding-block: var(--site-space-section);
+}`
+}
+
+function buildDesignTokens(hostname: string, markdown: string, density: Density) {
+  const colors = colorTokenRows(markdown)
+  const tokenPayload = {
+    name: hostname,
+    source: `https://${hostname}`,
+    colors: Object.fromEntries(
+      (colors.length ? colors : ["#7AB8F5", "#C8F04A", "#0D1016"]).map((color, index) => [
+        `site-${index + 1}`,
+        { value: color, type: "color" },
+      ]),
+    ),
+    typography: {
+      display: { value: "48px/56px", type: "typography" },
+      heading: { value: "32px/40px", type: "typography" },
+      body: { value: "16px/24px", type: "typography" },
+    },
+    spacing: {
+      section: { value: "64px", type: "dimension" },
+      card: { value: "24px", type: "dimension" },
+    },
+  }
+
+  if (density === "Compact") {
+    return `// Design Tokens: compact color package for ${hostname}
+${JSON.stringify({ name: tokenPayload.name, source: tokenPayload.source, colors: tokenPayload.colors }, null, 2)}`
+  }
+
+  return `// Design Tokens: full package for ${hostname}
+${JSON.stringify(tokenPayload, null, 2)}`
+}
+
+function getExportContent(tab: ExportTab, density: Density, hostname: string, markdown: string) {
+  if (tab === "Tailwind v4") return buildTailwind(hostname, markdown, density)
+  if (tab === "CSS Variables") return buildCssVariables(hostname, markdown, density)
+  if (tab === "Design Tokens") return buildDesignTokens(hostname, markdown, density)
+  return density === "Compact" ? compactMarkdown(markdown) : markdown
+}
+
+function extensionFor(tab: ExportTab) {
+  if (tab === "Design Tokens") return "json"
+  if (tab === "DESIGN.md") return "md"
+  return "css"
 }
 
 function renderInline(text: string) {
@@ -125,6 +259,8 @@ function renderMarkdown(text: string) {
 }
 
 export function GenerationResult({ url, content, isGenerating, onClose }: GenerationResultProps) {
+  const [activeTab, setActiveTab] = useState<ExportTab>("DESIGN.md")
+  const [density, setDensity] = useState<Density>("Extended")
   const normalizedUrl = useMemo(() => {
     if (!url) return "https://stripe.com"
     return url.startsWith("http") ? url : `https://${url}`
@@ -134,27 +270,26 @@ export function GenerationResult({ url, content, isGenerating, onClose }: Genera
   const previewUrl = useMemo(() => {
     return `https://api.microlink.io/?url=${encodeURIComponent(normalizedUrl)}&screenshot=true&meta=false&embed=screenshot.url`
   }, [normalizedUrl])
+  const exportContent = useMemo(() => getExportContent(activeTab, density, hostname, content), [activeTab, density, hostname, content])
 
   const downloadMarkdown = () => {
-    const blob = new Blob([content], { type: "text/markdown;charset=utf-8" })
+    const blob = new Blob([exportContent], { type: "text/plain;charset=utf-8" })
     const objectUrl = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = objectUrl
-    a.download = `DESIGN-${hostname || "site"}.md`
+    a.download = `${slugify(hostname || "site")}.${slugify(activeTab)}.${extensionFor(activeTab)}`
     document.body.appendChild(a)
     a.click()
     a.remove()
     URL.revokeObjectURL(objectUrl)
   }
 
-  const copyMarkdown = () => navigator.clipboard.writeText(content)
+  const copyMarkdown = () => navigator.clipboard.writeText(exportContent)
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background text-foreground">
       <header className="flex h-[68px] shrink-0 items-center justify-between border-b border-border bg-background px-5 md:px-8">
-        <div className="min-w-0 truncate text-lg font-semibold md:text-2xl">
-          Styles {hostname.replace(/^www\./, "")}
-        </div>
+        <div className="font-display text-2xl font-bold tracking-tight text-foreground">Parallect</div>
         <a href={normalizedUrl} target="_blank" rel="noreferrer" className="hidden items-center gap-2 rounded border border-border px-3 py-2 text-xs text-muted transition hover:text-foreground md:inline-flex">
           Visit site
           <ExternalLink className="h-3.5 w-3.5" />
@@ -229,16 +364,42 @@ export function GenerationResult({ url, content, isGenerating, onClose }: Genera
           className="min-h-0 border-l border-border bg-[#10131A]"
         >
           <div className="flex h-full min-h-0 flex-col">
-            <div className="flex h-16 shrink-0 items-center gap-8 border-b border-border px-6 text-sm font-semibold">
-              <span className="border-b border-foreground py-5 text-foreground">DESIGN.md</span>
-              <span className="py-5 text-muted">Tailwind v4</span>
-              <span className="py-5 text-muted">CSS Variables</span>
-              <span className="py-5 text-muted">Design Tokens</span>
+            <div className="flex h-16 shrink-0 items-center gap-8 overflow-x-auto border-b border-border px-6 text-sm font-semibold">
+              {(["DESIGN.md", "Tailwind v4", "CSS Variables", "Design Tokens"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`relative shrink-0 py-5 transition ${activeTab === tab ? "text-foreground" : "text-muted hover:text-foreground"}`}
+                >
+                  {tab}
+                  {activeTab === tab && (
+                    <motion.span
+                      layoutId="generation-export-tab"
+                      className="absolute inset-x-0 bottom-0 h-px bg-foreground"
+                      transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                    />
+                  )}
+                </button>
+              ))}
             </div>
             <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-6">
               <div className="flex gap-8 text-sm">
-                <span className="text-muted">Compact</span>
-                <span className="border-b-2 border-foreground pb-4 text-foreground">Extended</span>
+                {(["Compact", "Extended"] as const).map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => setDensity(option)}
+                    className={`relative pb-4 transition ${density === option ? "text-foreground" : "text-muted hover:text-foreground"}`}
+                  >
+                    {option}
+                    {density === option && (
+                      <motion.span
+                        layoutId="generation-density-tab"
+                        className="absolute inset-x-0 bottom-0 h-0.5 bg-foreground"
+                        transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                      />
+                    )}
+                  </button>
+                ))}
               </div>
               <div className="flex gap-2">
                 <button onClick={copyMarkdown} className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm text-foreground transition hover:bg-surface">
@@ -247,13 +408,30 @@ export function GenerationResult({ url, content, isGenerating, onClose }: Genera
                 </button>
                 <button onClick={downloadMarkdown} disabled={!content} className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm text-foreground transition hover:bg-surface disabled:opacity-40">
                   <Download className="h-4 w-4" />
-                  .md
+                  .{extensionFor(activeTab)}
                 </button>
               </div>
             </div>
-            <div className="min-h-0 flex-1 overflow-auto px-6 py-5 font-mono">
-              {renderMarkdown(content)}
-              {isGenerating && <span className="ml-1 inline-block h-5 w-2 animate-pulse bg-accent align-middle" />}
+            <div className="min-h-0 flex-1 overflow-hidden px-6 py-5 font-mono">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`${activeTab}-${density}`}
+                  initial={{ opacity: 0, y: 16, filter: "blur(8px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, y: -10, filter: "blur(6px)" }}
+                  transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
+                  className="h-full overflow-y-auto overscroll-contain"
+                >
+                  {activeTab === "DESIGN.md" ? (
+                    <>
+                      {renderMarkdown(exportContent)}
+                      {isGenerating && <span className="ml-1 inline-block h-5 w-2 animate-pulse bg-accent align-middle" />}
+                    </>
+                  ) : (
+                    <pre className="whitespace-pre-wrap text-sm leading-7 text-[#D8DDE8]">{exportContent}</pre>
+                  )}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
         </motion.aside>

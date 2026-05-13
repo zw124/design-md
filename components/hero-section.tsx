@@ -204,21 +204,41 @@ export function HeroSection() {
     if (!section) return
 
     const context = gsap.context(() => {
-      gsap.to("[data-hero-content]", {
-        yPercent: -12,
-        scale: 0.97,
-        opacity: 0.42,
-        ease: "none",
+      gsap.set("[data-hero-reveal]", { y: 34, opacity: 0, filter: "blur(14px)" })
+      gsap.set("[data-hero-orbit]", { rotateX: 5, transformPerspective: 900, transformOrigin: "50% 100%" })
+
+      gsap.timeline({ defaults: { ease: "power4.out" } })
+        .to("[data-hero-reveal]", {
+          y: 0,
+          opacity: 1,
+          filter: "blur(0px)",
+          duration: 0.95,
+          stagger: 0.08,
+        })
+        .to("[data-hero-orbit]", { rotateX: 0, duration: 0.8 }, 0.12)
+
+      const scrollTl = gsap.timeline({
         scrollTrigger: {
           trigger: section,
           start: "top top",
           end: "bottom top",
-          scrub: true,
+          scrub: 0.9,
         },
       })
 
+      const progressTarget = section.querySelector("[data-hero-progress]")
+
+      scrollTl
+        .to("[data-hero-title]", { yPercent: -18, scale: 0.94, opacity: 0.32, ease: "none" }, 0)
+        .to("[data-hero-copy]", { yPercent: -26, opacity: 0.18, ease: "none" }, 0)
+        .to("[data-hero-form]", { yPercent: -36, scale: 0.985, opacity: 0.24, ease: "none" }, 0)
+
+      if (progressTarget) {
+        scrollTl.to(progressTarget, { yPercent: -42, opacity: 0.2, ease: "none" }, 0)
+      }
+
       gsap.to("[data-trust-track]", {
-        xPercent: -18,
+        xPercent: -32,
         ease: "none",
         scrollTrigger: {
           trigger: section,
@@ -238,26 +258,26 @@ export function HeroSection() {
       <div data-hero-content className="max-w-3xl mx-auto text-center">
 
         {/* Eyebrow pill */}
-        <div className="animate-fade-up-1 inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-surface text-sm text-muted mb-8">
+        <div data-hero-reveal className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-surface text-sm text-muted mb-8">
           <span className="w-2 h-2 rounded-full bg-accent animate-pulse-dot" />
           <span>Generate source-backed DESIGN.md files</span>
         </div>
 
         {/* H1 */}
-        <h1 className="animate-fade-up-2 font-display text-5xl md:text-6xl font-bold text-foreground leading-tight mb-6 text-balance">
+        <h1 data-hero-reveal data-hero-title className="font-display text-5xl md:text-6xl font-bold text-foreground leading-tight mb-6 text-balance">
           Turn any website into{" "}
           <br />
           <em className="text-warm not-italic font-display italic">DESIGN.MD</em>
         </h1>
 
         {/* Subheading */}
-        <p className="animate-fade-up-3 font-mono text-base text-muted leading-relaxed mb-10 max-w-xl mx-auto text-pretty">
+        <p data-hero-reveal data-hero-copy className="font-mono text-base text-muted leading-relaxed mb-10 max-w-xl mx-auto text-pretty">
           Paste a URL and get a clean DESIGN.md with AI analysis, verified colors, typography guidance, layout rules, and component specs.
         </p>
 
         {/* Input bar */}
-        <div className="animate-fade-up-4">
-          <div className="flex gap-2 p-1.5 rounded-lg border border-border bg-surface max-w-2xl mx-auto mb-4">
+        <div data-hero-reveal data-hero-form data-hero-orbit>
+          <div className="flex gap-2 p-1.5 rounded-lg border border-border bg-surface max-w-2xl mx-auto mb-4 shadow-[0_28px_90px_rgba(0,0,0,0.18)]">
             <input
               type="url"
               value={url}
@@ -305,9 +325,9 @@ export function HeroSection() {
 
         {/* Loading bar + status */}
         {loading && (
-          <div className="mt-10 max-w-2xl mx-auto">
-            <div className="h-0.5 bg-border rounded-full overflow-hidden mb-3">
-              <div className="h-full bg-accent animate-loading-bar rounded-full" />
+          <div data-hero-progress className="mt-10 max-w-2xl mx-auto">
+            <div className="h-1 bg-border rounded-full overflow-hidden mb-3">
+              <div className="h-full bg-accent animate-loading-bar rounded-full shadow-[0_0_22px_rgba(200,240,74,0.45)]" />
             </div>
             <p className="text-xs text-muted font-mono text-center">
               {STATUS_STEPS[statusIndex]}
@@ -315,7 +335,7 @@ export function HeroSection() {
           </div>
         )}
 
-        <div className="animate-fade-up-4 relative mt-10 mb-12 overflow-hidden py-4">
+        <div data-hero-reveal className="relative mt-10 mb-12 overflow-hidden py-4">
           <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-[#080A0F] via-[#080A0F] to-transparent" />
           <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-[#080A0F] via-[#080A0F] to-transparent" />
           <div className="trust-marquee relative h-12 overflow-hidden">

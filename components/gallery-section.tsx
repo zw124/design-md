@@ -258,9 +258,6 @@ function GalleryDetail({ item, onClose }: { item: GalleryItem; onClose: () => vo
           <span className="shrink-0 font-display text-2xl font-bold tracking-tight text-foreground">
             Parallect
           </span>
-          <div className="min-w-0 truncate text-lg font-semibold md:text-2xl">
-            <span className="text-muted">/</span> Styles <span className="text-muted">/</span> {item.name}
-          </div>
         </div>
         <button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-md border border-border text-muted transition hover:text-foreground">
           <X className="h-4 w-4" />
@@ -416,39 +413,61 @@ export function GallerySection() {
     const context = gsap.context(() => {
       const cards = gsap.utils.toArray<HTMLElement>("[data-gallery-card]")
       const images = gsap.utils.toArray<HTMLElement>("[data-gallery-image]")
+      const colorDots = gsap.utils.toArray<HTMLElement>("[data-gallery-dot]")
 
       gsap.fromTo(
         "[data-gallery-heading]",
-        { y: 70, opacity: 0, filter: "blur(14px)" },
+        { y: 90, opacity: 0, filter: "blur(18px)", scale: 0.96 },
         {
           y: 0,
           opacity: 1,
           filter: "blur(0px)",
-          ease: "power3.out",
+          scale: 1,
+          ease: "power4.out",
           scrollTrigger: {
             trigger: section,
-            start: "top 82%",
-            end: "top 38%",
-            scrub: 0.65,
+            start: "top 86%",
+            end: "top 34%",
+            scrub: 0.9,
           },
         },
       )
 
       gsap.fromTo(
         cards,
-        { y: 95, opacity: 0, rotateX: 8, scale: 0.94, transformOrigin: "50% 100%" },
+        { y: 130, opacity: 0, rotateX: 14, rotateY: -4, scale: 0.9, filter: "blur(16px)", transformOrigin: "50% 100%" },
         {
           y: 0,
           opacity: 1,
           rotateX: 0,
+          rotateY: 0,
           scale: 1,
-          stagger: 0.07,
+          filter: "blur(0px)",
+          stagger: { each: 0.055, from: "start" },
           ease: "power4.out",
           scrollTrigger: {
             trigger: railRef.current,
-            start: "top 86%",
-            end: "bottom 54%",
-            scrub: 0.75,
+            start: "top 88%",
+            end: "bottom 48%",
+            scrub: 1.1,
+          },
+        },
+      )
+
+      gsap.fromTo(
+        colorDots,
+        { scale: 0, opacity: 0, y: 8 },
+        {
+          scale: 1,
+          opacity: 1,
+          y: 0,
+          stagger: 0.018,
+          ease: "back.out(2.2)",
+          scrollTrigger: {
+            trigger: railRef.current,
+            start: "top 72%",
+            end: "bottom 58%",
+            scrub: 0.55,
           },
         },
       )
@@ -456,10 +475,11 @@ export function GallerySection() {
       images.forEach((image) => {
         gsap.fromTo(
           image,
-          { scale: 1.12, yPercent: -5 },
+          { scale: 1.18, yPercent: -8, filter: "saturate(0.82) contrast(0.92)" },
           {
             scale: 1.02,
-            yPercent: 5,
+            yPercent: 8,
+            filter: "saturate(1) contrast(1)",
             ease: "none",
             scrollTrigger: {
               trigger: image,
@@ -526,6 +546,7 @@ export function GallerySection() {
                   <div className="mt-5 flex flex-wrap gap-1.5">
                     {item.colors.slice(0, 4).map((color) => (
                       <span
+                        data-gallery-dot
                         key={`${item.id}-${color.value}`}
                         className="h-4 w-4 rounded-full border border-white/10"
                         style={{ backgroundColor: color.value }}
