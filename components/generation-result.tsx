@@ -416,9 +416,9 @@ export function GenerationResult({ url, content, isGenerating, onClose }: Genera
               <AnimatePresence mode="wait">
                 <motion.div
                   key={`${activeTab}-${density}`}
-                  initial={{ opacity: 0, y: 16, filter: "blur(8px)" }}
-                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, y: -10, filter: "blur(6px)" }}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
                   className="h-full overflow-y-auto overscroll-contain"
                 >

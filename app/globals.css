@@ -137,8 +137,6 @@
 /* Frosted glass nav */
 .nav-glass {
   background: rgba(8, 10, 15, 0.86);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(27, 34, 48, 0.9);
 }
 

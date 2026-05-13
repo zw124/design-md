@@ -38,8 +38,8 @@ export default function ParallectPage() {
     const context = gsap.context(() => {
       gsap.fromTo(
         "[data-parallect-hero]",
-        { y: 52, opacity: 0, filter: "blur(16px)" },
-        { y: 0, opacity: 1, filter: "blur(0px)", duration: 0.9, ease: "power4.out" },
+        { y: 52, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.9, ease: "power4.out" },
       )
 
       gsap.fromTo(

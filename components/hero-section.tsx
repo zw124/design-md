@@ -41,6 +41,24 @@ function TrustWordmark({ icon, label }: { icon: string; label: string }) {
   )
 }
 
+function ProductHuntBadge() {
+  return (
+    <a
+      href="https://www.producthunt.com/products/design-md-by-parallect?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-design-md-by-parallect"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="mx-auto mt-7 block w-fit opacity-90 transition hover:opacity-100 focus:outline-none"
+    >
+      <img
+        alt="DESIGN.MD by Parallect - Generate DESIGN.md from any website URL | Product Hunt"
+        width="250"
+        height="54"
+        src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1143084&theme=dark&t=1778715946646"
+      />
+    </a>
+  )
+}
+
 export function HeroSection() {
   const { data: session, status } = useSession()
   const isLoaded = status !== "loading"
@@ -204,18 +222,17 @@ export function HeroSection() {
     if (!section) return
 
     const context = gsap.context(() => {
-      gsap.set("[data-hero-reveal]", { y: 34, opacity: 0, filter: "blur(14px)" })
-      gsap.set("[data-hero-orbit]", { rotateX: 5, transformPerspective: 900, transformOrigin: "50% 100%" })
+      gsap.set("[data-hero-reveal]", { y: 24, opacity: 0 })
+      gsap.set("[data-hero-orbit]", { y: 10, transformOrigin: "50% 100%" })
 
       gsap.timeline({ defaults: { ease: "power4.out" } })
         .to("[data-hero-reveal]", {
           y: 0,
           opacity: 1,
-          filter: "blur(0px)",
-          duration: 0.95,
-          stagger: 0.08,
+          duration: 0.82,
+          stagger: 0.07,
         })
-        .to("[data-hero-orbit]", { rotateX: 0, duration: 0.8 }, 0.12)
+        .to("[data-hero-orbit]", { y: 0, duration: 0.7 }, 0.12)
 
       const scrollTl = gsap.timeline({
         scrollTrigger: {
@@ -229,12 +246,12 @@ export function HeroSection() {
       const progressTarget = section.querySelector("[data-hero-progress]")
 
       scrollTl
-        .to("[data-hero-title]", { yPercent: -18, scale: 0.94, opacity: 0.32, ease: "none" }, 0)
-        .to("[data-hero-copy]", { yPercent: -26, opacity: 0.18, ease: "none" }, 0)
-        .to("[data-hero-form]", { yPercent: -36, scale: 0.985, opacity: 0.24, ease: "none" }, 0)
+        .to("[data-hero-title]", { yPercent: -7, opacity: 0.78, ease: "none" }, 0)
+        .to("[data-hero-copy]", { yPercent: -10, opacity: 0.62, ease: "none" }, 0)
+        .to("[data-hero-form]", { yPercent: -12, opacity: 0.78, ease: "none" }, 0)
 
       if (progressTarget) {
-        scrollTl.to(progressTarget, { yPercent: -42, opacity: 0.2, ease: "none" }, 0)
+        scrollTl.to(progressTarget, { yPercent: -10, opacity: 0.68, ease: "none" }, 0)
       }
 
       gsap.to("[data-trust-track]", {
@@ -320,6 +337,10 @@ export function HeroSection() {
               </button>
             ))}
           </div>
+        </div>
+
+        <div data-hero-reveal>
+          <ProductHuntBadge />
         </div>
 
         {/* Loading bar + status */}

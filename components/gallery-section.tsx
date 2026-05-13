@@ -226,9 +226,9 @@ function MarkdownPane({ item }: { item: GalleryItem }) {
           <AnimatePresence mode="wait">
             <motion.pre
               key={`${activeTab}-${density}`}
-              initial={{ opacity: 0, y: 16, filter: "blur(8px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: -10, filter: "blur(6px)" }}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
               className="h-full overflow-y-auto whitespace-pre-wrap px-6 py-6 font-mono text-sm leading-7 text-[#D8DDE8] overscroll-contain"
             >
@@ -274,8 +274,8 @@ function GalleryDetail({ item, onClose }: { item: GalleryItem; onClose: () => vo
         >
           <div className="space-y-14 p-6 md:p-9">
             <motion.section
-              initial={{ y: 34, opacity: 0, filter: "blur(10px)" }}
-              animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+              initial={{ y: 34, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.58, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
             >
               <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-[0_28px_90px_rgba(0,0,0,0.28)]">
@@ -300,8 +300,8 @@ function GalleryDetail({ item, onClose }: { item: GalleryItem; onClose: () => vo
             </motion.section>
 
             <motion.section
-              initial={{ y: 34, opacity: 0, filter: "blur(10px)" }}
-              animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+              initial={{ y: 34, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.58, ease: [0.22, 1, 0.36, 1], delay: 0.16 }}
             >
               <h2 className="mb-7 text-2xl font-semibold">Color Palette</h2>
@@ -319,8 +319,8 @@ function GalleryDetail({ item, onClose }: { item: GalleryItem; onClose: () => vo
             </motion.section>
 
             <motion.section
-              initial={{ y: 34, opacity: 0, filter: "blur(10px)" }}
-              animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+              initial={{ y: 34, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.58, ease: [0.22, 1, 0.36, 1], delay: 0.24 }}
             >
               <h2 className="mb-7 text-2xl font-semibold">Typography</h2>
@@ -342,8 +342,8 @@ function GalleryDetail({ item, onClose }: { item: GalleryItem; onClose: () => vo
             </motion.section>
 
             <motion.section
-              initial={{ y: 34, opacity: 0, filter: "blur(10px)" }}
-              animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+              initial={{ y: 34, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.58, ease: [0.22, 1, 0.36, 1], delay: 0.32 }}
             >
               <h2 className="mb-7 text-2xl font-semibold">Spacing & Shape</h2>
@@ -364,8 +364,8 @@ function GalleryDetail({ item, onClose }: { item: GalleryItem; onClose: () => vo
             </motion.section>
 
             <motion.section
-              initial={{ y: 34, opacity: 0, filter: "blur(10px)" }}
-              animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+              initial={{ y: 34, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.58, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
             >
               <h2 className="mb-7 text-2xl font-semibold">Guidelines</h2>
@@ -417,39 +417,34 @@ export function GallerySection() {
 
       gsap.fromTo(
         "[data-gallery-heading]",
-        { y: 90, opacity: 0, filter: "blur(18px)", scale: 0.96 },
+        { y: 46, opacity: 0 },
         {
           y: 0,
           opacity: 1,
-          filter: "blur(0px)",
-          scale: 1,
           ease: "power4.out",
           scrollTrigger: {
             trigger: section,
             start: "top 86%",
-            end: "top 34%",
-            scrub: 0.9,
+            end: "top 42%",
+            scrub: 0.65,
           },
         },
       )
 
       gsap.fromTo(
         cards,
-        { y: 130, opacity: 0, rotateX: 14, rotateY: -4, scale: 0.9, filter: "blur(16px)", transformOrigin: "50% 100%" },
+        { y: 72, opacity: 0, scale: 0.96, transformOrigin: "50% 100%" },
         {
           y: 0,
           opacity: 1,
-          rotateX: 0,
-          rotateY: 0,
           scale: 1,
-          filter: "blur(0px)",
           stagger: { each: 0.055, from: "start" },
           ease: "power4.out",
           scrollTrigger: {
             trigger: railRef.current,
             start: "top 88%",
-            end: "bottom 48%",
-            scrub: 1.1,
+            end: "bottom 56%",
+            scrub: 0.75,
           },
         },
       )
@@ -475,10 +470,10 @@ export function GallerySection() {
       images.forEach((image) => {
         gsap.fromTo(
           image,
-          { scale: 1.18, yPercent: -8, filter: "saturate(0.82) contrast(0.92)" },
+          { scale: 1.08, yPercent: -4, filter: "saturate(0.9) contrast(0.96)" },
           {
             scale: 1.02,
-            yPercent: 8,
+            yPercent: 4,
             filter: "saturate(1) contrast(1)",
             ease: "none",
             scrollTrigger: {
