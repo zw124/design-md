@@ -41,24 +41,6 @@ function TrustWordmark({ icon, label }: { icon: string; label: string }) {
   )
 }
 
-function ProductHuntBadge() {
-  return (
-    <a
-      href="https://www.producthunt.com/products/design-md-by-parallect?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-design-md-by-parallect"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="mx-auto mt-7 block w-fit opacity-90 transition hover:opacity-100 focus:outline-none"
-    >
-      <img
-        alt="DESIGN.MD by Parallect - Generate DESIGN.md from any website URL | Product Hunt"
-        width="250"
-        height="54"
-        src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1143084&theme=dark&t=1778715946646"
-      />
-    </a>
-  )
-}
-
 export function HeroSection() {
   const { data: session, status } = useSession()
   const isLoaded = status !== "loading"
@@ -337,10 +319,6 @@ export function HeroSection() {
               </button>
             ))}
           </div>
-        </div>
-
-        <div data-hero-reveal>
-          <ProductHuntBadge />
         </div>
 
         {/* Loading bar + status */}

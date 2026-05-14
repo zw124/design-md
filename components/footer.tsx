@@ -15,6 +15,19 @@ export function Footer() {
           © 2026 DESIGN.MD by Parallect — Built for people who care about design systems
         </p>
         <div className="flex flex-wrap items-center justify-center gap-5">
+          <a
+            href="https://www.producthunt.com/products/design-md-by-parallect?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-design-md-by-parallect"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="opacity-70 transition hover:opacity-100"
+          >
+            <img
+              alt="DESIGN.MD by Parallect - Generate DESIGN.md from any website URL | Product Hunt"
+              width="160"
+              height="35"
+              src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1143084&theme=dark&t=1778715946646"
+            />
+          </a>
           <Link href="/#generator" className="text-xs text-muted hover:text-foreground transition-colors font-mono">
             Generator
           </Link>
