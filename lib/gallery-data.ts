@@ -934,6 +934,26 @@ export function normalizeGalleryUrl(value: string) {
   }
 }
 
-export function screenshotUrl(href: string) {
-  return `https://api.microlink.io/?url=${encodeURIComponent(href)}&screenshot=true&meta=false&embed=screenshot.url`
+type ScreenshotPreset = "card" | "detail"
+
+export function screenshotUrl(href: string, preset: ScreenshotPreset = "card") {
+  const params = new URLSearchParams({
+    url: href,
+    screenshot: "true",
+    meta: "false",
+    embed: "screenshot.url",
+    type: "png",
+    waitUntil: "networkidle2",
+    adblock: "true",
+    hideCookieBanner: "true",
+    "viewport.width": preset === "detail" ? "1920" : "1600",
+    "viewport.height": preset === "detail" ? "1200" : "1000",
+    deviceScaleFactor: "2",
+  })
+
+  return `https://api.microlink.io/?${params.toString()}`
+}
+
+export function fallbackScreenshotUrl(href: string) {
+  return `https://image.thum.io/get/width/1600/crop/1000/noanimate/${encodeURIComponent(href)}`
 }

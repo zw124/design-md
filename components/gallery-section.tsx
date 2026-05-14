@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion"
 import { Check, Copy, Download, ExternalLink, FileDown, X } from "lucide-react"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
-import { DEFAULT_GALLERY_ITEMS, type GalleryItem, screenshotUrl } from "@/lib/gallery-data"
+import { DEFAULT_GALLERY_ITEMS, fallbackScreenshotUrl, type GalleryItem, screenshotUrl } from "@/lib/gallery-data"
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -160,6 +160,38 @@ function downloadExport(item: GalleryItem, tab: ExportTab, density: Density) {
   URL.revokeObjectURL(objectUrl)
 }
 
+function GalleryScreenshot({
+  item,
+  preset = "card",
+  priority = false,
+  className,
+}: {
+  item: GalleryItem
+  preset?: "card" | "detail"
+  priority?: boolean
+  className?: string
+}) {
+  const [src, setSrc] = useState(() => screenshotUrl(item.href, preset))
+  const [fallbackUsed, setFallbackUsed] = useState(false)
+
+  return (
+    <img
+      data-gallery-image={preset === "card" ? true : undefined}
+      src={src}
+      alt={`${item.name} website screenshot`}
+      className={className}
+      loading={priority ? "eager" : "lazy"}
+      decoding="async"
+      referrerPolicy="no-referrer"
+      onError={() => {
+        if (fallbackUsed) return
+        setFallbackUsed(true)
+        setSrc(fallbackScreenshotUrl(item.href))
+      }}
+    />
+  )
+}
+
 function MarkdownPane({ item }: { item: GalleryItem }) {
   const [activeTab, setActiveTab] = useState<ExportTab>("DESIGN.md")
   const [density, setDensity] = useState<Density>("Extended")
@@ -279,14 +311,18 @@ function GalleryDetail({ item, onClose }: { item: GalleryItem; onClose: () => vo
               transition={{ duration: 0.58, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
             >
               <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-[0_28px_90px_rgba(0,0,0,0.28)]">
-                <motion.img
-                  src={screenshotUrl(item.href)}
-                  alt={`${item.name} website screenshot`}
-                  className="aspect-[16/10] w-full object-cover object-top"
+                <motion.div
                   initial={{ scale: 1.08 }}
                   animate={{ scale: 1 }}
                   transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                />
+                >
+                  <GalleryScreenshot
+                    item={item}
+                    preset="detail"
+                    priority
+                    className="aspect-[16/10] w-full object-cover object-top"
+                  />
+                </motion.div>
               </div>
               <div className="mt-8 flex items-start justify-between gap-6">
                 <div>
@@ -519,12 +555,10 @@ export function GallerySection() {
                 className="group overflow-hidden rounded-lg border border-border bg-surface/95 text-left shadow-[0_24px_80px_rgba(0,0,0,0.20)] transition duration-300 hover:-translate-y-1 hover:border-[#3A4354] hover:bg-[#121722]"
               >
                 <div className="aspect-[16/10] overflow-hidden border-b border-border bg-[#0B0E14]">
-                  <img
-                    data-gallery-image
-                    src={screenshotUrl(item.href)}
-                    alt={`${item.name} website screenshot`}
+                  <GalleryScreenshot
+                    item={item}
+                    priority={index < 3}
                     className="h-full w-full object-cover object-top opacity-90 transition duration-500 group-hover:scale-[1.025] group-hover:opacity-100"
-                    loading={index < 3 ? "eager" : "lazy"}
                   />
                 </div>
                 <div className="p-5">
