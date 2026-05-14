@@ -9,7 +9,7 @@ import { DEFAULT_GALLERY_ITEMS, fallbackScreenshotUrl, type GalleryItem, screens
 
 gsap.registerPlugin(ScrollTrigger)
 
-const GALLERY_ITEMS = DEFAULT_GALLERY_ITEMS.slice(0, 12)
+const GALLERY_ITEMS = DEFAULT_GALLERY_ITEMS
 type ExportTab = "DESIGN.md" | "Tailwind v4" | "CSS Variables" | "Design Tokens"
 type Density = "Compact" | "Extended"
 
@@ -318,7 +318,6 @@ function GalleryDetail({ item, onClose }: { item: GalleryItem; onClose: () => vo
                 >
                   <GalleryScreenshot
                     item={item}
-                    preset="detail"
                     priority
                     className="aspect-[16/10] w-full object-cover object-top"
                   />

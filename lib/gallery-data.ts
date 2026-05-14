@@ -906,7 +906,7 @@ const CURATED_GALLERY_INPUTS: CuratedGalleryInput[] = [
   },
 ]
 
-export const DEFAULT_GALLERY_ITEMS: GalleryItem[] = CURATED_GALLERY_INPUTS.slice(0, 12).map((item) => {
+export const DEFAULT_GALLERY_ITEMS: GalleryItem[] = CURATED_GALLERY_INPUTS.map((item) => {
   const galleryItem = {
     ...item,
     id: item.id.replace("curated-", "showcase-"),
