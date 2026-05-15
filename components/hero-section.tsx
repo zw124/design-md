@@ -355,6 +355,7 @@ export function HeroSection() {
         isGenerating={isGenerating}
         colorPayload={colorPayload}
         onClose={() => setShowOutput(false)}
+        contentRef={outputRef}
       />
     )}
     </>

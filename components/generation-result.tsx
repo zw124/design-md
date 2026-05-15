@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { AnimatePresence, motion } from "framer-motion"
+import { motion } from "framer-motion"
 import { Copy, Download, ExternalLink } from "lucide-react"
 
 interface GenerationResultProps {
@@ -10,6 +10,7 @@ interface GenerationResultProps {
   isGenerating?: boolean
   colorPayload?: unknown
   onClose: () => void
+  contentRef?: React.RefObject<HTMLDivElement | null>
 }
 
 type ExportTab = "DESIGN.md" | "Tailwind v4" | "CSS Variables" | "Design Tokens"
@@ -258,7 +259,7 @@ function renderMarkdown(text: string) {
   return elements
 }
 
-export function GenerationResult({ url, content, isGenerating, onClose }: GenerationResultProps) {
+export function GenerationResult({ url, content, isGenerating, onClose, contentRef }: GenerationResultProps) {
   const [activeTab, setActiveTab] = useState<ExportTab>("DESIGN.md")
   const [density, setDensity] = useState<Density>("Extended")
   const normalizedUrl = useMemo(() => {
@@ -297,12 +298,7 @@ export function GenerationResult({ url, content, isGenerating, onClose }: Genera
       </header>
 
       <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(520px,0.98fr)]">
-        <motion.section
-          initial={{ opacity: 0, x: -28 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-          className="min-h-0 overflow-y-auto border-r border-border bg-background"
-        >
+        <section className="min-h-0 overflow-y-auto border-r border-border bg-background">
           <div className="space-y-14 p-6 md:p-9">
             <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-[0_28px_90px_rgba(0,0,0,0.28)]">
               <img src={previewUrl} alt={`${hostname} screenshot`} className="aspect-[16/10] w-full object-cover object-top" />
@@ -355,14 +351,9 @@ export function GenerationResult({ url, content, isGenerating, onClose }: Genera
               </div>
             </section>
           </div>
-        </motion.section>
+        </section>
 
-        <motion.aside
-          initial={{ opacity: 0, x: 28 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
-          className="min-h-0 border-l border-border bg-[#10131A]"
-        >
+        <aside className="min-h-0 border-l border-border bg-[#10131A]">
           <div className="flex h-full min-h-0 flex-col">
             <div className="flex h-16 shrink-0 items-center gap-8 overflow-x-auto border-b border-border px-6 text-sm font-semibold">
               {(["DESIGN.md", "Tailwind v4", "CSS Variables", "Design Tokens"] as const).map((tab) => (
@@ -412,16 +403,8 @@ export function GenerationResult({ url, content, isGenerating, onClose }: Genera
                 </button>
               </div>
             </div>
-            <div className="min-h-0 flex-1 overflow-hidden px-6 py-5 font-mono">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`${activeTab}-${density}`}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
-                  className="h-full overflow-y-auto overscroll-contain"
-                >
+            <div ref={contentRef} className="min-h-0 flex-1 overflow-hidden px-6 py-5 font-mono">
+              <div key={`${activeTab}-${density}`} className="h-full overflow-y-auto overscroll-contain">
                   {activeTab === "DESIGN.md" ? (
                     <>
                       {renderMarkdown(exportContent)}
@@ -430,11 +413,10 @@ export function GenerationResult({ url, content, isGenerating, onClose }: Genera
                   ) : (
                     <pre className="whitespace-pre-wrap text-sm leading-7 text-[#D8DDE8]">{exportContent}</pre>
                   )}
-                </motion.div>
-              </AnimatePresence>
+              </div>
             </div>
           </div>
-        </motion.aside>
+        </aside>
       </div>
     </div>
   )
